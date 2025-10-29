@@ -11,10 +11,10 @@ const CATEGORY_CONFIG: Record<
     title: string;
   }
 > = {
-  subclass: { endpoint: "subclass", title: "Подклассы" },
-  ancestry: { endpoint: "ancestry", title: "Родословные" },
-  community: { endpoint: "community", title: "Сообщества" },
-  "domain-card": { endpoint: "domain-card", title: "Карты Домена" },
+  subclass: { endpoint: "subclass", title: "Подкласс" },
+  ancestry: { endpoint: "ancestry", title: "Родословная" },
+  community: { endpoint: "community", title: "Сообщество" },
+  "domain-card": { endpoint: "domain-card", title: "Карта Домена" },
 };
 
 export interface TemplateFeature {
@@ -99,6 +99,21 @@ const SUBCLASS_GROUP_LABEL: Record<(typeof SUBCLASS_FEATURE_KEYS)[number], strin
   mastery_features: "Мастерство",
 };
 
+function formatFeatureText(feature: RawFeature) {
+  const title = feature.name?.trim();
+  const body = feature.main_body?.trim() ?? "";
+
+  if (title && body) {
+    return `***${title}:*** ${body}`;
+  }
+
+  if (title) {
+    return `***${title}***`;
+  }
+
+  return body;
+}
+
 function extractFeatures(category: TemplateCategoryId, item: RawTemplateItem): TemplateFeature[] {
   const features: TemplateFeature[] = [];
 
@@ -109,15 +124,17 @@ function extractFeatures(category: TemplateCategoryId, item: RawTemplateItem): T
       if (!Array.isArray(list)) continue;
 
       const groupLabel = SUBCLASS_GROUP_LABEL[key];
+      const lines = list.map((feature) => formatFeatureText(feature)).filter(Boolean);
+      if (lines.length === 0) continue;
 
-      for (const feature of list) {
-        features.push({
-          id: feature.id,
-          name: feature.name,
-          text: feature.main_body?.trim() ?? "",
-          group: groupLabel,
-        });
-      }
+      const mergedText = [`***${groupLabel}:***`, ...lines].join("\n\n");
+
+      features.push({
+        id: key,
+        name: groupLabel,
+        text: mergedText,
+        group: groupLabel,
+      });
     }
 
     return features;
@@ -131,7 +148,7 @@ function extractFeatures(category: TemplateCategoryId, item: RawTemplateItem): T
     features.push({
       id: feature.id,
       name: feature.name,
-      text: feature.main_body?.trim() ?? "",
+      text: formatFeatureText(feature),
     });
   }
 
@@ -159,7 +176,7 @@ function mapTemplateItem(category: TemplateCategoryId, item: RawTemplateItem): T
 
 async function fetchCategory(category: TemplateCategoryId): Promise<TemplateGroup> {
   const config = CATEGORY_CONFIG[category];
-  const response = await fetch(`${API_BASE_URL}/${config.endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}/${config.endpoint}?lang=ru`, {
     headers: {
       Accept: "application/json",
     },
