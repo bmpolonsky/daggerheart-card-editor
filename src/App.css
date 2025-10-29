@@ -400,24 +400,41 @@
   background-color: #7a98d0 !important;
 }
 
-.welcome-dialog__content {
+.empty-state {
+  margin: auto;
+  max-width: 420px;
+  padding: 48px 32px;
+  border-radius: 24px;
+  background-color: rgba(28, 29, 40, 0.85);
   text-align: center;
-  padding: 32px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  color: hsl(var(--foreground));
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
 }
 
-.welcome-dialog__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background-color: rgba(101, 125, 187, 0.25);
+.empty-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background-color: rgba(101, 125, 187, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   color: hsl(var(--primary));
+}
+
+.empty-state h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
 }
 .edge-selector {
   display: flex;

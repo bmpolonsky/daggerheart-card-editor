@@ -1,4 +1,3 @@
-import { forwardRef } from "preact/compat";
 import type { JSX } from "preact";
 import { cn } from "@/lib/utils";
 import "./button.css";
@@ -36,26 +35,18 @@ const sizeClassMap: Record<ButtonSize, string> = {
   icon: "btn--icon",
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      variant = "primary",
-      size = "md",
-      className,
-      type = "button",
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <button
-        ref={ref}
-        type={type}
-        className={cn("btn", variantClassMap[variant], sizeClassMap[size], className)}
-        {...props}
-      />
-    );
-  }
-);
-
-Button.displayName = "Button";
+export function Button({
+  variant = "primary",
+  size = "md",
+  className,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cn("btn", variantClassMap[variant], sizeClassMap[size], className)}
+      {...props}
+    />
+  );
+}

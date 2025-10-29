@@ -1,7 +1,6 @@
 import { useState, useRef } from "preact/hooks";
 import type { TargetedEvent } from "preact";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,7 +60,6 @@ type TemplateGroupConfig = {
 };
 
 export default function App() {
-  const [showWelcome, setShowWelcome] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [ancestryExpanded, setAncestryExpanded] = useState(true);
   const [classExpanded, setClassExpanded] = useState(false);
@@ -117,7 +115,6 @@ export default function App() {
 
   const handleCardClick = (card: CardTemplate) => {
     setSelectedCard(card);
-    setShowWelcome(false);
     setCardTitle(card.name);
     setCardType(card.category.toUpperCase());
     setCustomImage(null);
@@ -615,43 +612,29 @@ export default function App() {
               </aside>
             </>
           ) : (
-            <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-              <DialogContent>
-                <DialogTitle className="sr-only">Welcome Dialog</DialogTitle>
-                <div className="welcome-dialog__content">
-                  <div className="welcome-dialog__icon">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      width="40"
-                      height="40"
-                    >
-                      <rect x="2" y="6" width="20" height="12" rx="2" />
-                      <path d="M2 10h20" />
-                      <path d="M6 6V4" />
-                      <path d="M10 6V4" />
-                      <path d="M14 6V4" />
-                      <path d="M18 6V4" />
-                    </svg>
-                  </div>
-                  <h2 style={{ fontSize: "1.5rem", fontWeight: 700, margin: 0 }}>
-                    Welcome to the Daggerheart Card Editor!
-                  </h2>
-                  <p style={{ color: "hsl(var(--muted-foreground))", margin: 0 }}>
-                    Need help? Let's make a card together. I'll guide you through each step of the
-                    process.
-                  </p>
-                  <p style={{ color: "hsl(var(--muted-foreground))", margin: 0 }}>
-                    Click the button below to start the tour.
-                  </p>
-                  <Button className="export-button" onClick={() => setShowWelcome(false)}>
-                    Start Tour
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <section className="empty-state">
+              <div className="empty-state__icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  width="48"
+                  height="48"
+                >
+                  <rect x="2" y="6" width="20" height="12" rx="2" />
+                  <path d="M2 10h20" />
+                  <path d="M6 6V4" />
+                  <path d="M10 6V4" />
+                  <path d="M14 6V4" />
+                  <path d="M18 6V4" />
+                </svg>
+              </div>
+              <h2>Выберите шаблон слева</h2>
+              <p>
+                Нажмите на любую карточку, чтобы открыть рабочее пространство и начать редактировать.
+              </p>
+            </section>
           )}
         </div>
       </main>
