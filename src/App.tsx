@@ -5,6 +5,7 @@ import {
   type TemplateCard,
   type TemplateCollectionResponse,
   type TemplateGroup,
+  type TemplateFeature,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,13 @@ type TemplateGroupConfig = TemplateGroup & {
   toggle: () => void;
 };
 
+const FALLBACK_FEATURE_NAME = "Без названия";
+
+function normalizeFeatureName(feature?: TemplateFeature) {
+  if (!feature) return "";
+  return feature.name?.trim() || FALLBACK_FEATURE_NAME;
+}
+
 export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [templateGroups, setTemplateGroups] = useState<TemplateGroup[]>([]);
@@ -42,14 +50,10 @@ export default function App() {
   const [ability2Title, setAbility2Title] = useState("");
   const [ability2Text, setAbility2Text] = useState("");
   const [customImage, setCustomImage] = useState<string | null>(null);
+  const [selectedFeatureIndex, setSelectedFeatureIndex] = useState(0);
 
   const [damageThresholds, setDamageThresholds] = useState(false);
-  const [showAsText, setShowAsText] = useState(false);
   const [cardBorder, setCardBorder] = useState(true);
-  const [cutLines, setCutLines] = useState(false);
-  const [gutters, setGutters] = useState(false);
-  const [cardBack, setCardBack] = useState(false);
-  const [cardEdges, setCardEdges] = useState<"square" | "rounded">("square");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -159,11 +163,21 @@ export default function App() {
     setCardType(categoryTitle.toUpperCase());
     setCardDescription(card.description ?? "");
 
-    const [firstFeature, secondFeature] = card.features;
-    setAbility1Title(firstFeature?.name ?? "");
-    setAbility1Text(firstFeature?.text ?? "");
-    setAbility2Title(secondFeature?.name ?? "");
-    setAbility2Text(secondFeature?.text ?? "");
+    setSelectedFeatureIndex(0);
+
+    if (card.category === "subclass") {
+      const firstFeature = card.features[0];
+      setAbility1Title(normalizeFeatureName(firstFeature));
+      setAbility1Text(firstFeature?.text ?? "");
+      setAbility2Title("");
+      setAbility2Text("");
+    } else {
+      const [firstFeature, secondFeature] = card.features;
+      setAbility1Title(normalizeFeatureName(firstFeature));
+      setAbility1Text(firstFeature?.text ?? "");
+      setAbility2Title(normalizeFeatureName(secondFeature));
+      setAbility2Text(secondFeature?.text ?? "");
+    }
 
     setCustomImage(null);
   };
@@ -183,6 +197,15 @@ export default function App() {
       setCustomImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSubclassFeatureChange = (event: TargetedEvent<HTMLSelectElement, Event>) => {
+    const index = Number(event.currentTarget.value);
+    setSelectedFeatureIndex(index);
+
+    const feature = selectedCard?.features[index];
+    setAbility1Title(normalizeFeatureName(feature));
+    setAbility1Text(feature?.text ?? "");
   };
 
   const handleExportPNG = async () => {
@@ -255,6 +278,29 @@ export default function App() {
       )}
     </div>
   );
+
+  const cardImage = customImage ?? (selectedCard?.image ?? null);
+  const isSubclass = selectedCard?.category === "subclass";
+  const featureSummaries = selectedCard
+    ? selectedCard.features.map((feature, index) => {
+        const title = feature.group
+          ? `${feature.group}: ${normalizeFeatureName(feature)}`
+          : normalizeFeatureName(feature);
+        const text = feature.text?.trim();
+        return text ? `${index + 1}. ${title}\n${text}` : `${index + 1}. ${title}`;
+      })
+    : [];
+  const textSummary = [
+    cardTitle && `Название: ${cardTitle}`,
+    cardType && `Тип: ${cardType}`,
+    cardDescription && `Описание: ${cardDescription}`,
+    ...featureSummaries,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const statusBadges: string[] = [];
+  if (damageThresholds) statusBadges.push("Пороги урона");
 
   return (
     <div className="app-shell">
@@ -337,10 +383,20 @@ export default function App() {
                   ref={cardRef}
                   className={cn(
                     "card-canvas",
-                    cardEdges === "rounded" && "card-canvas--rounded",
-                    cardBorder && "card-canvas--bordered"
+                    "card-canvas--rounded",
+                    cardBorder && "card-canvas--bordered",
+                    damageThresholds && "card-canvas--damage"
                   )}
                 >
+                  {statusBadges.length > 0 && (
+                    <div className="card-canvas__badges">
+                      {statusBadges.map((badge) => (
+                        <span key={badge} className="card-canvas__badge">
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div
                     style={{
                       position: "absolute",
@@ -351,101 +407,164 @@ export default function App() {
                       gap: "16px",
                     }}
                   >
-                    <div
-                      className="card-canvas__dropzone"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {customImage ? (
-                        <img src={customImage} alt="Пользовательское изображение" className="card-canvas__image" />
-                      ) : (
-                        <div>
-                          <div className="card-canvas__upload-icon">
-                            <IconUpload width={24} height={24} stroke="#374151" />
-                          </div>
-                          <p style={{ textAlign: "center", color: "#4b5563", fontSize: "0.875rem" }}>
-                            Загрузить изображение
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      style={{ display: "none" }}
-                    />
-
-                    <div className="card-canvas__body">
                       <div
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          justifyContent: "space-between",
-                          gap: "12px",
-                          marginBottom: "12px",
-                        }}
+                        className="card-canvas__dropzone"
+                        onClick={() => fileInputRef.current?.click()}
                       >
-                        <input
-                          type="text"
-                          value={cardTitle}
-                          onChange={onInputChange<HTMLInputElement>(setCardTitle)}
-                          style={{
-                            fontSize: "1.875rem",
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            flex: 1,
-                          }}
-                        />
-                        <input
-                          type="text"
-                          value={cardType}
-                          onChange={onInputChange<HTMLInputElement>(setCardType)}
-                          className="card-canvas__type"
-                        />
+                        {cardImage ? (
+                          <img
+                            src={cardImage}
+                            alt={
+                              customImage
+                                ? "Пользовательское изображение"
+                                : selectedCard?.name ?? "Изображение"
+                            }
+                            className="card-canvas__image"
+                          />
+                        ) : (
+                          <div>
+                            <div className="card-canvas__upload-icon">
+                              <IconUpload width={24} height={24} stroke="#374151" />
+                            </div>
+                            <p style={{ textAlign: "center", color: "#4b5563", fontSize: "0.875rem" }}>
+                              Загрузить изображение
+                            </p>
+                          </div>
+                        )}
                       </div>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        <textarea
-                          value={cardDescription}
-                          onChange={onInputChange<HTMLTextAreaElement>(setCardDescription)}
-                          rows={2}
-                          style={{ fontStyle: "italic" }}
-                        />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        style={{ display: "none" }}
+                      />
 
-                        <div>
+                      <div className="card-canvas__body">
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: "12px",
+                            marginBottom: "12px",
+                          }}
+                        >
                           <input
                             type="text"
-                            value={ability1Title}
-                            onChange={onInputChange<HTMLInputElement>(setAbility1Title)}
-                            style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
+                            value={cardTitle}
+                            onChange={onInputChange<HTMLInputElement>(setCardTitle)}
+                            style={{
+                              fontSize: "1.875rem",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              flex: 1,
+                            }}
                           />
-                          <span>: </span>
-                          <textarea
-                            value={ability1Text}
-                            onChange={onInputChange<HTMLTextAreaElement>(setAbility1Text)}
-                            rows={3}
+                          <input
+                            type="text"
+                            value={cardType}
+                            onChange={onInputChange<HTMLInputElement>(setCardType)}
+                            className="card-canvas__type"
                           />
                         </div>
 
-                        <div>
-                          <input
-                            type="text"
-                            value={ability2Title}
-                            onChange={onInputChange<HTMLInputElement>(setAbility2Title)}
-                            style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
-                          />
-                          <span>: </span>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                           <textarea
-                            value={ability2Text}
-                            onChange={onInputChange<HTMLTextAreaElement>(setAbility2Text)}
+                            value={cardDescription}
+                            onChange={onInputChange<HTMLTextAreaElement>(setCardDescription)}
                             rows={2}
+                            style={{ fontStyle: "italic" }}
                           />
+
+                          {isSubclass ? (
+                            <div className="card-feature-editor">
+                              <label className="card-feature-editor__label" htmlFor="subclass-feature-select">
+                                Особенность
+                              </label>
+                              <select
+                                id="subclass-feature-select"
+                                className="card-feature-editor__select"
+                                value={String(selectedFeatureIndex)}
+                                onChange={handleSubclassFeatureChange}
+                                disabled={selectedCard.features.length === 0}
+                              >
+                                {selectedCard.features.map((feature, index) => (
+                                  <option key={feature.id} value={index}>
+                                    {feature.group
+                                      ? `${feature.group} · ${normalizeFeatureName(feature)}`
+                                      : normalizeFeatureName(feature)}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <input
+                                type="text"
+                                value={ability1Title}
+                                onChange={onInputChange<HTMLInputElement>(setAbility1Title)}
+                                style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
+                              />
+                              <textarea
+                                value={ability1Text}
+                                onChange={onInputChange<HTMLTextAreaElement>(setAbility1Text)}
+                                rows={4}
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <div>
+                                <input
+                                  type="text"
+                                  value={ability1Title}
+                                  onChange={onInputChange<HTMLInputElement>(setAbility1Title)}
+                                  style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
+                                />
+                                <span>: </span>
+                                <textarea
+                                  value={ability1Text}
+                                  onChange={onInputChange<HTMLTextAreaElement>(setAbility1Text)}
+                                  rows={3}
+                                />
+                              </div>
+
+                              <div>
+                                <input
+                                  type="text"
+                                  value={ability2Title}
+                                  onChange={onInputChange<HTMLInputElement>(setAbility2Title)}
+                                  style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
+                                />
+                                <span>: </span>
+                                <textarea
+                                  value={ability2Text}
+                                  onChange={onInputChange<HTMLTextAreaElement>(setAbility2Text)}
+                                  rows={2}
+                                />
+                              </div>
+                            </>
+                          )}
+
+                          {damageThresholds && textSummary && (
+                            <textarea
+                              className="card-canvas__text-view"
+                              value={textSummary}
+                              readOnly
+                              rows={8}
+                            />
+                          )}
+                        </div>
+
+                        <div className="card-canvas__footer">
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <span>Совместимо с Daggerheart™. Условия на Daggerheart.com</span>
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                 </div>
               </section>
 
@@ -472,24 +591,6 @@ export default function App() {
                     />
                   </button>
                 </div>
-
-                <div className="toggle-row">
-                  <span>Показывать как текст</span>
-                  <button
-                    type="button"
-                    className={cn("toggle-switch", showAsText && "toggle-switch--active")}
-                    onClick={() => setShowAsText((state) => !state)}
-                    aria-pressed={showAsText}
-                  >
-                    <span
-                      className={cn(
-                        "toggle-switch__thumb",
-                        showAsText && "toggle-switch__thumb--active"
-                      )}
-                    />
-                  </button>
-                </div>
-
                 <div className="toggle-row">
                   <span>Рамка карты</span>
                   <button
@@ -505,77 +606,6 @@ export default function App() {
                       )}
                     />
                   </button>
-                </div>
-
-                <div className="properties-section">
-                  <h3>Углы карты</h3>
-                  <div className="edge-selector">
-                    <button
-                      type="button"
-                      className={cn(cardEdges === "square" && "edge-selector__option--active")}
-                      onClick={() => setCardEdges("square")}
-                    >
-                      Прямые
-                    </button>
-                    <button
-                      type="button"
-                      className={cn(cardEdges === "rounded" && "edge-selector__option--active")}
-                      onClick={() => setCardEdges("rounded")}
-                    >
-                      Скруглённые
-                    </button>
-                  </div>
-                </div>
-
-                <div className="properties-section">
-                  <div className="toggle-row">
-                    <span>Линии резки</span>
-                    <button
-                      type="button"
-                      className={cn("toggle-switch", cutLines && "toggle-switch--active")}
-                      onClick={() => setCutLines((state) => !state)}
-                      aria-pressed={cutLines}
-                    >
-                      <span
-                        className={cn(
-                          "toggle-switch__thumb",
-                          cutLines && "toggle-switch__thumb--active"
-                        )}
-                      />
-                    </button>
-                  </div>
-                  <div className="toggle-row">
-                    <span>Поля</span>
-                    <button
-                      type="button"
-                      className={cn("toggle-switch", gutters && "toggle-switch--active")}
-                      onClick={() => setGutters((state) => !state)}
-                      aria-pressed={gutters}
-                    >
-                      <span
-                        className={cn(
-                          "toggle-switch__thumb",
-                          gutters && "toggle-switch__thumb--active"
-                        )}
-                      />
-                    </button>
-                  </div>
-                  <div className="toggle-row">
-                    <span>Оборот карты</span>
-                    <button
-                      type="button"
-                      className={cn("toggle-switch", cardBack && "toggle-switch--active")}
-                      onClick={() => setCardBack((state) => !state)}
-                      aria-pressed={cardBack}
-                    >
-                      <span
-                        className={cn(
-                          "toggle-switch__thumb",
-                          cardBack && "toggle-switch__thumb--active"
-                        )}
-                      />
-                    </button>
-                  </div>
                 </div>
 
                 <Button className="export-button" onClick={handleExportPNG}>

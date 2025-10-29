@@ -1,6 +1,6 @@
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
@@ -327,6 +327,26 @@
   object-fit: cover;
 }
 
+.card-canvas__badges {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 2;
+}
+
+.card-canvas__badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: rgba(28, 29, 40, 0.85);
+  color: #e5e7eb;
+  font-size: 0.675rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .card-canvas__body input,
 .card-canvas__body textarea {
   background: transparent;
@@ -340,6 +360,52 @@
 .card-canvas__body textarea {
   resize: none;
 }
+
+.card-canvas__text-view {
+  margin-top: 4px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #1f2933;
+  white-space: pre-wrap;
+}
+
+.card-canvas--damage {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2), 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.card-feature-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-feature-editor__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(55, 65, 81, 0.9);
+}
+
+.card-feature-editor__select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  color: #1f2933;
+}
+
+.card-feature-editor__select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 
 .card-canvas__type {
   background-color: #d4a84a;
@@ -481,30 +547,4 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-.edge-selector {
-  display: flex;
-  gap: 8px;
-}
-
-.edge-selector button {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background-color: #2a2b3a;
-  color: hsl(var(--foreground));
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.edge-selector button:hover {
-  background-color: #3a3b4a;
-}
-
-.edge-selector__option--active {
-  background-color: #8da9e3 !important;
-  color: #1c1d28 !important;
 }
