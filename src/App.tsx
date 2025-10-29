@@ -6,19 +6,19 @@ import {
   type TemplateCollectionResponse,
   type TemplateGroup,
   type TemplateFeature,
+  type TemplateCategoryId,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   IconClose,
-  IconGrid3x3,
-  IconHelpCircle,
   IconRotateCw,
   IconSearch,
   IconUpload,
 } from "@/components/icons";
 import "./App.css";
+import "@/external/daggerheart-cards.css";
 import { renderMarkdown } from "@/lib/markdown";
 
 type TemplateGroupConfig = TemplateGroup & {
@@ -54,6 +54,131 @@ function buildAggregatedContent(features: TemplateFeature[]) {
   return stripMarkdownLinks(
     features.map(formatFeatureContent).filter(Boolean).join("\n\n")
   );
+}
+
+type CardTypeId = TemplateCategoryId;
+
+interface CardTypeConfig {
+  id: CardTypeId;
+  name: string;
+  cardLabel: string;
+  baseClasses: string[];
+  pathSegment: string;
+  defaultDivider?: string;
+  supportsBanner: boolean;
+  supportsSpellcast: boolean;
+  supportsTier: boolean;
+  supportsStress: boolean;
+  supportsDataClass: boolean;
+  supportsDataDomain: boolean;
+}
+
+const CARD_TYPE_CONFIG: Record<CardTypeId, CardTypeConfig> = {
+  ancestry: {
+    id: "ancestry",
+    name: "Родословная",
+    cardLabel: "Родословная",
+    baseClasses: ["ancestry"],
+    pathSegment: "ancestry",
+    defaultDivider: "https://daggerheart.su/image/ancestry/divider.avif",
+    supportsBanner: false,
+    supportsSpellcast: false,
+    supportsTier: false,
+    supportsStress: false,
+    supportsDataClass: false,
+    supportsDataDomain: false,
+  },
+  community: {
+    id: "community",
+    name: "Сообщество",
+    cardLabel: "Сообщество",
+    baseClasses: ["community"],
+    pathSegment: "community",
+    defaultDivider: "https://daggerheart.su/image/community/divider.webp",
+    supportsBanner: false,
+    supportsSpellcast: false,
+    supportsTier: false,
+    supportsStress: false,
+    supportsDataClass: false,
+    supportsDataDomain: false,
+  },
+  subclass: {
+    id: "subclass",
+    name: "Подкласс",
+    cardLabel: "Подкласс",
+    baseClasses: ["subclass"],
+    pathSegment: "subclass",
+    defaultDivider: "",
+    supportsBanner: true,
+    supportsSpellcast: true,
+    supportsTier: true,
+    supportsStress: false,
+    supportsDataClass: true,
+    supportsDataDomain: false,
+  },
+  "domain-card": {
+    id: "domain-card",
+    name: "Карта Домена",
+    cardLabel: "Карта Домена",
+    baseClasses: ["domain_card"],
+    pathSegment: "domain-card",
+    defaultDivider: "",
+    supportsBanner: true,
+    supportsSpellcast: false,
+    supportsTier: false,
+    supportsStress: true,
+    supportsDataClass: false,
+    supportsDataDomain: true,
+  },
+};
+
+const CARD_TYPE_LIST = Object.values(CARD_TYPE_CONFIG);
+const DEFAULT_CARD_TYPE_ID: CardTypeId = "ancestry";
+
+interface CardFields {
+  slug: string;
+  customClasses: string;
+  dataSource: string;
+  dataClass: string;
+  dataDomain: string;
+  title: string;
+  prelude: string;
+  description: string;
+  attribution: string;
+  source: string;
+  label: string;
+  subclassTier: string;
+  spellcast: string;
+  bannerImage: string;
+  bannerText: string;
+  stressImage: string;
+  stressText: string;
+  dividerImage: string;
+  buttonHref: string;
+}
+
+function createEmptyCardFields(): CardFields {
+  return {
+    slug: "",
+    customClasses: "",
+    dataSource: "",
+    dataClass: "",
+    dataDomain: "",
+    title: "",
+    prelude: "",
+    description: "",
+    attribution: "",
+    source: "",
+    label: "",
+    subclassTier: "",
+    spellcast: "",
+    bannerImage: "",
+    bannerText: "",
+    stressImage: "",
+    stressText: "",
+    dividerImage: "",
+    buttonHref: "",
+  };
 }
 
 const EXPORT_PLACEHOLDER_IMAGE =
@@ -170,15 +295,11 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [cardTitle, setCardTitle] = useState("");
-  const [cardType, setCardType] = useState("");
-  const [cardDescription, setCardDescription] = useState("");
-  const [cardContent, setCardContent] = useState("");
+  const [selectedTypeId, setSelectedTypeId] = useState<CardTypeId>(DEFAULT_CARD_TYPE_ID);
+  const [cardFields, setCardFields] = useState<CardFields>(() => createEmptyCardFields());
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [selectedFeatureIndex, setSelectedFeatureIndex] = useState(0);
 
-  const [damageThresholds, setDamageThresholds] = useState(false);
-  const [cardBorder, setCardBorder] = useState(true);
   const [exportError, setExportError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -191,6 +312,19 @@ export default function App() {
   ) => (event: TargetedEvent<Element, Event>) => {
     const value = event.currentTarget.value;
     setter(transform ? transform(value) : value);
+  };
+
+  const onCardFieldInput = <
+    Element extends HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+  >(
+    field: keyof CardFields,
+    transform?: (value: string) => string
+  ) => (event: TargetedEvent<Element, Event>) => {
+    const value = event.currentTarget.value;
+    setCardFields((prev) => ({
+      ...prev,
+      [field]: transform ? transform(value) : value,
+    }));
   };
 
   const applyTemplatePayload = ({
@@ -253,16 +387,6 @@ export default function App() {
     }
   };
 
-  const categoryTitleMap = useMemo(() => {
-    const map: Record<string, string> = {};
-
-    for (const group of templateGroups) {
-      map[group.id] = group.title;
-    }
-
-    return map;
-  }, [templateGroups]);
-
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const configureGroup = (group: TemplateGroup): TemplateGroupConfig => {
@@ -286,27 +410,41 @@ export default function App() {
   };
 
   const handleCardClick = (card: TemplateCard) => {
+    const typeConfig = CARD_TYPE_CONFIG[card.category];
+    const prelude = stripMarkdownLinks(card.description ?? "");
+    const description =
+      card.category === "subclass"
+        ? stripMarkdownLinks(card.features[0]?.text ?? "")
+        : buildAggregatedContent(card.features);
+
     setSelectedCard(card);
-    setCardTitle(card.name);
-    const categoryTitle = categoryTitleMap[card.category] ?? card.category;
-    setCardType(categoryTitle.toUpperCase());
-    setCardDescription(stripMarkdownLinks(card.description ?? ""));
+    setSelectedTypeId(card.category);
     setSelectedFeatureIndex(0);
     setExportError(null);
     setIsExporting(false);
-
-    if (card.category === "subclass") {
-      setCardContent(stripMarkdownLinks(card.features[0]?.text ?? ""));
-    } else {
-      setCardContent(buildAggregatedContent(card.features));
-    }
-
     setCustomImage(null);
+
+    setCardFields({
+      ...createEmptyCardFields(),
+      slug: card.slug,
+      customClasses: card.slug,
+      dataSource: card.sourceName ?? "",
+      title: card.name,
+      prelude,
+      description,
+      source: card.sourceName ?? "",
+      label: typeConfig.cardLabel,
+      subclassTier: typeConfig.supportsTier ? card.features[0]?.group ?? "" : "",
+      dividerImage: typeConfig.defaultDivider ?? "",
+      buttonHref: `https://daggerheart.su/${typeConfig.pathSegment}/${card.slug}`,
+    });
   };
 
   const handleCloseEditor = () => {
     setSelectedCard(null);
     setCustomImage(null);
+    setSelectedTypeId(DEFAULT_CARD_TYPE_ID);
+    setCardFields(createEmptyCardFields());
   };
 
   const handleImageUpload = (event: TargetedEvent<HTMLInputElement, Event>) => {
@@ -326,7 +464,24 @@ export default function App() {
     setSelectedFeatureIndex(index);
 
     const feature = selectedCard?.features[index];
-    setCardContent(stripMarkdownLinks(feature?.text ?? ""));
+    setCardFields((prev) => ({
+      ...prev,
+      description: stripMarkdownLinks(feature?.text ?? ""),
+      subclassTier: feature?.group ?? prev.subclassTier,
+    }));
+  };
+
+  const handleTypeChange = (event: TargetedEvent<HTMLSelectElement, Event>) => {
+    const nextType = event.currentTarget.value as CardTypeId;
+    setSelectedTypeId(nextType);
+    setCardFields((prev) => {
+      const nextConfig = CARD_TYPE_CONFIG[nextType];
+      return {
+        ...prev,
+        label: prev.label || nextConfig.cardLabel,
+        dividerImage: prev.dividerImage || nextConfig.defaultDivider || "",
+      };
+    });
   };
 
   const handleExportPNG = async () => {
@@ -347,7 +502,8 @@ export default function App() {
       });
 
       const link = document.createElement("a");
-      link.download = `${cardTitle.trim() || "карта"}-карта.png`;
+      const safeTitle = cardFields.title.trim() || "карта";
+      link.download = `${safeTitle}-карта.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -415,19 +571,38 @@ export default function App() {
   );
 
   const cardImage = customImage ?? (selectedCard?.image ?? null);
-  const isSubclass = selectedCard?.category === "subclass";
-  const markdownHtml = useMemo(() => renderMarkdown(cardContent), [cardContent]);
-  const textSummary = [
-    cardTitle.trim() && `Название: ${cardTitle.trim()}`,
-    cardType.trim() && `Тип: ${cardType.trim()}`,
-    cardDescription.trim() && `Описание:\n${cardDescription.trim()}`,
-    cardContent.trim() && `Контент:\n${cardContent.trim()}`,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
-  const statusBadges: string[] = [];
-  if (damageThresholds) statusBadges.push("Пороги урона");
+  const typeConfig = CARD_TYPE_CONFIG[selectedTypeId];
+  const isSubclass = selectedTypeId === "subclass";
+  const preludeHtml = useMemo(
+    () => renderMarkdown(cardFields.prelude),
+    [cardFields.prelude]
+  );
+  const descriptionHtml = useMemo(
+    () => renderMarkdown(cardFields.description),
+    [cardFields.description]
+  );
+  const spellcastHtml = useMemo(() => {
+    const html = renderMarkdown(cardFields.spellcast);
+    return html.replace(/^<p>/, "").replace(/<\/p>$/, "");
+  }, [cardFields.spellcast]);
+  const cardClassName = cn(
+    "card",
+    ...typeConfig.baseClasses,
+    cardFields.customClasses && cardFields.customClasses
+  );
+  const cardAttributes: Record<string, string> = {
+    ...(cardFields.dataSource && { "data-source": cardFields.dataSource }),
+  };
+  if (typeConfig.supportsDataClass && cardFields.dataClass) {
+    cardAttributes["data-class"] = cardFields.dataClass;
+  }
+  if (typeConfig.supportsTier && cardFields.subclassTier) {
+    cardAttributes["data-subclass-tier"] = cardFields.subclassTier;
+  }
+  if (typeConfig.supportsDataDomain && cardFields.dataDomain) {
+    cardAttributes["data-domain"] = cardFields.dataDomain;
+  }
+  const cardLabel = cardFields.label || typeConfig.cardLabel;
 
   return (
     <div className="app-shell">
@@ -487,7 +662,9 @@ export default function App() {
           </Button>
           {selectedCard && (
             <div className="workspace__selection">
-              <span className="workspace__selection-label">{cardTitle}</span>
+              <span className="workspace__selection-label">
+                {cardFields.title || "Без названия"}
+              </span>
               <Button variant="ghost" size="icon" aria-label="Закрыть редактор" onClick={handleCloseEditor}>
                 <IconClose />
               </Button>
@@ -500,232 +677,356 @@ export default function App() {
             <>
               <section className="editor-panel">
                 <div className="editor-panel__headline">
-                  <h1>{cardType}</h1>
+                  <h1>{typeConfig.name}</h1>
                   <p className="editor-panel__timestamp">
                     Последнее обновление: {lastUpdatedLabel ?? "—"}
                   </p>
                 </div>
 
-                <div
-                  ref={cardRef}
-                  className={cn(
-                    "card-canvas",
-                    "card-canvas--rounded",
-                    cardBorder && "card-canvas--bordered",
-                    damageThresholds && "card-canvas--damage"
-                  )}
-                >
-                  {statusBadges.length > 0 && (
-                    <div className="card-canvas__badges">
-                      {statusBadges.map((badge) => (
-                        <span key={badge} className="card-canvas__badge">
-                          {badge}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="card-canvas__layout">
+                <div className="card-preview-wrapper">
+                  <div className="card-preview card-preview-scope">
+                    <div className="card_holder print">
                       <div
-                        className="card-canvas__dropzone"
-                        onClick={() => fileInputRef.current?.click()}
+                        ref={cardRef}
+                        id={cardFields.slug || undefined}
+                        className={cardClassName}
+                        {...cardAttributes}
                       >
-                        {cardImage ? (
-                          <img
-                            src={cardImage}
-                            alt={
-                              customImage
-                                ? "Пользовательское изображение"
-                                : selectedCard?.name ?? "Изображение"
+                        <a
+                          href={cardFields.buttonHref || undefined}
+                          className="button"
+                          aria-label="Открыть оригинал"
+                          style={{ pointerEvents: "none" }}
+                        />
+                        <div
+                          className="image card-preview__image"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => fileInputRef.current?.click()}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              fileInputRef.current?.click();
                             }
-                            className="card-canvas__image"
-                          />
-                        ) : (
-                          <div>
-                            <div className="card-canvas__upload-icon">
-                              <IconUpload width={24} height={24} stroke="#374151" />
-                            </div>
-                            <p style={{ textAlign: "center", color: "#4b5563", fontSize: "0.875rem" }}>
-                              Загрузить изображение
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: "none" }}
-                      />
-
-                      <div className="card-canvas__body">
-                        <div className="card-canvas__title-row">
-                          <h2 className="card-canvas__title">{cardTitle || "Без названия"}</h2>
-                          <span className="card-canvas__type">{cardType || "—"}</span>
-                        </div>
-
-                        <div className="card-fields">
-                          {cardDescription.trim() && (
-                            <p className="card-canvas__description">{cardDescription}</p>
-                          )}
-
-                          {cardContent.trim() ? (
-                            <div
-                              className="card-canvas__markdown"
-                              dangerouslySetInnerHTML={{ __html: markdownHtml }}
+                          }}
+                        >
+                          {cardImage ? (
+                            <img
+                              src={cardImage}
+                              alt={
+                                customImage
+                                  ? "Пользовательское изображение"
+                                  : selectedCard?.name ?? "Изображение"
+                              }
+                              className="card_image"
                             />
                           ) : (
-                            <p className="card-canvas__placeholder">Добавьте текст в панели справа</p>
-                          )}
-
-                          {damageThresholds && (
-                            <div className="card-canvas__thresholds">
-                              <div className="card-threshold">
-                                <div className="card-threshold__label">Minor Damage</div>
-                                <div className="card-threshold__text">Mark 1 HP</div>
-                                <div className="card-threshold__value">5</div>
+                            <div className="card-preview__image-placeholder">
+                              <div className="card-preview__upload-icon">
+                                <IconUpload width={24} height={24} stroke="#4b5563" />
                               </div>
-                              <div className="card-threshold-break">5</div>
-                              <div className="card-threshold">
-                                <div className="card-threshold__label">Major Damage</div>
-                                <div className="card-threshold__text">Mark 2 HP</div>
-                                <div className="card-threshold__value">15</div>
-                              </div>
-                              <div className="card-threshold-break">15</div>
-                              <div className="card-threshold">
-                                <div className="card-threshold__label">Severe Damage</div>
-                                <div className="card-threshold__text">Mark 3 HP</div>
-                                <div className="card-threshold__value">25</div>
-                              </div>
+                              <p>Загрузить изображение</p>
                             </div>
                           )}
                         </div>
+                        {typeConfig.supportsStress && cardFields.stressImage && (
+                          <img className="stress_image" src={cardFields.stressImage} alt="" />
+                        )}
+                        {typeConfig.supportsStress && cardFields.stressText && (
+                          <p className="stress_text">{cardFields.stressText}</p>
+                        )}
+                        {typeConfig.supportsBanner && cardFields.bannerImage && (
+                          <img className="banner_image" src={cardFields.bannerImage} alt="" />
+                        )}
+                        {typeConfig.supportsBanner && cardFields.bannerText && (
+                          <p className="banner_text">{cardFields.bannerText}</p>
+                        )}
+                        <p className="attribution">{cardFields.attribution}</p>
+                        <p className="source">{cardFields.source}</p>
+
+                        <div className="flex">
+                          <div className="display">
+                            <div className="background" />
+                            <div className="text">
+                              <p className="title">{cardFields.title || "Без названия"}</p>
+                              {typeConfig.supportsTier && cardFields.subclassTier && (
+                                <p className="subclass_tier">{cardFields.subclassTier}</p>
+                              )}
+                              {typeConfig.supportsSpellcast && cardFields.spellcast && (
+                                <p
+                                  className="spellcast"
+                                  dangerouslySetInnerHTML={{ __html: spellcastHtml }}
+                                />
+                              )}
+                              {cardFields.prelude.trim() && (
+                                <div
+                                  className="prelude"
+                                  dangerouslySetInnerHTML={{ __html: preludeHtml }}
+                                />
+                              )}
+                              {cardFields.description.trim() && (
+                                <div
+                                  className="description"
+                                  dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                          {cardFields.dividerImage ? (
+                            <img className="divider" src={cardFields.dividerImage} alt="" />
+                          ) : (
+                            <div className="card-preview__divider-placeholder" />
+                          )}
+                          <p className="label">{cardLabel}</p>
+                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    hidden
+                  />
                 </div>
               </section>
 
               <aside className="properties-panel">
-                {selectedCard ? (
-                  <>
-                    <div className="properties-section properties-section--form">
-                      <h3>Редактирование</h3>
-                      <div className="properties-field">
-                        <label htmlFor="card-title">Название</label>
-                        <Input
-                          id="card-title"
-                          value={cardTitle}
-                          onInput={onFieldInput<HTMLInputElement>(setCardTitle)}
-                        />
-                      </div>
-                      <div className="properties-field">
-                        <label htmlFor="card-type">Тип</label>
-                        <Input
-                          id="card-type"
-                          value={cardType}
-                          onInput={onFieldInput<HTMLInputElement>(setCardType)}
-                        />
-                      </div>
-                      <div className="properties-field">
-                        <label htmlFor="card-description">Описание</label>
-                        <textarea
-                          id="card-description"
-                          className="properties-textarea"
-                          value={cardDescription}
-                          onInput={onFieldInput<HTMLTextAreaElement>(
-                            setCardDescription,
-                            stripMarkdownLinks
-                          )}
-                          rows={3}
-                        />
-                      </div>
-                      {isSubclass && (
-                        <div className="properties-field">
-                          <label htmlFor="card-feature">Раздел</label>
-                          <select
-                            id="card-feature"
-                            className="card-feature-editor__select"
-                            value={String(selectedFeatureIndex)}
-                            onChange={handleSubclassFeatureChange}
-                          >
-                            {selectedCard.features.map((feature, index) => (
-                              <option key={feature.id} value={index}>
-                                {feature.group
-                                  ? `${feature.group} · ${normalizeFeatureName(feature)}`
-                                  : normalizeFeatureName(feature)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                      <div className="properties-field">
-                        <label htmlFor="card-content">Контент</label>
-                        <textarea
-                          id="card-content"
-                          className="card-content-textarea"
-                          value={cardContent}
-                          onInput={onFieldInput<HTMLTextAreaElement>(
-                            setCardContent,
-                            stripMarkdownLinks
-                          )}
-                          rows={isSubclass ? 12 : 14}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="properties-section">
-                      <h3>Оформление</h3>
-                      <div className="toggle-row">
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <IconGrid3x3 width={20} height={20} />
-                          <span>Пороги урона</span>
-                        </div>
-                        <button
-                          type="button"
-                          className={cn(
-                            "toggle-switch",
-                            damageThresholds && "toggle-switch--active"
-                          )}
-                          onClick={() => setDamageThresholds((state) => !state)}
-                          aria-pressed={damageThresholds}
-                        >
-                          <span
-                            className={cn(
-                              "toggle-switch__thumb",
-                              damageThresholds && "toggle-switch__thumb--active"
-                            )}
-                          />
-                        </button>
-                      </div>
-                      <div className="toggle-row">
-                        <span>Рамка карты</span>
-                        <button
-                          type="button"
-                          className={cn("toggle-switch", cardBorder && "toggle-switch--active")}
-                          onClick={() => setCardBorder((state) => !state)}
-                          aria-pressed={cardBorder}
-                        >
-                          <span
-                            className={cn(
-                              "toggle-switch__thumb",
-                              cardBorder && "toggle-switch__thumb--active"
-                            )}
-                          />
-                        </button>
-                      </div>
-                    </div>
-
-                    <Button className="export-button" onClick={handleExportPNG} disabled={isExporting}>
-                      {isExporting ? "Экспортируем…" : "Экспорт PNG"}
-                    </Button>
-                    {exportError && <p className="export-error">{exportError}</p>}
-                  </>
-                ) : (
-                  <div className="properties-empty">
-                    <p>Выберите шаблон, чтобы редактировать и экспортировать карту.</p>
+                <div className="properties-section">
+                  <h3>Тип карты</h3>
+                  <div className="properties-field">
+                    <label htmlFor="card-type">Категория</label>
+                    <select
+                      id="card-type"
+                      className="card-feature-editor__select"
+                      value={selectedTypeId}
+                      onChange={handleTypeChange}
+                    >
+                      {CARD_TYPE_LIST.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                )}
+                </div>
+
+                <div className="properties-section properties-section--form">
+                  <h3>Основные поля</h3>
+                  <div className="properties-field">
+                    <label htmlFor="card-title">Заголовок</label>
+                    <Input
+                      id="card-title"
+                      value={cardFields.title}
+                      onInput={onCardFieldInput<HTMLInputElement>("title")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-label">Подпись</label>
+                    <Input
+                      id="card-label"
+                      value={cardFields.label}
+                      placeholder={typeConfig.cardLabel}
+                      onInput={onCardFieldInput<HTMLInputElement>("label")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-source">Источник</label>
+                    <Input
+                      id="card-source"
+                      value={cardFields.source}
+                      onInput={onCardFieldInput<HTMLInputElement>("source")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-attribution">Автор</label>
+                    <Input
+                      id="card-attribution"
+                      value={cardFields.attribution}
+                      onInput={onCardFieldInput<HTMLInputElement>("attribution")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-prelude">Прелюдия</label>
+                    <textarea
+                      id="card-prelude"
+                      className="properties-textarea"
+                      value={cardFields.prelude}
+                      onInput={onCardFieldInput<HTMLTextAreaElement>("prelude", stripMarkdownLinks)}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-description">Описание</label>
+                    <textarea
+                      id="card-description"
+                      className="card-content-textarea"
+                      value={cardFields.description}
+                      onInput={onCardFieldInput<HTMLTextAreaElement>(
+                        "description",
+                        stripMarkdownLinks
+                      )}
+                      rows={isSubclass ? 12 : 14}
+                    />
+                  </div>
+                  {isSubclass && selectedCard && selectedCard.features.length > 0 && (
+                    <div className="properties-field">
+                      <label htmlFor="card-feature">Раздел</label>
+                      <select
+                        id="card-feature"
+                        className="card-feature-editor__select"
+                        value={String(selectedFeatureIndex)}
+                        onChange={handleSubclassFeatureChange}
+                      >
+                        {selectedCard.features.map((feature, index) => (
+                          <option key={feature.id} value={index}>
+                            {feature.group
+                              ? `${feature.group} · ${normalizeFeatureName(feature)}`
+                              : normalizeFeatureName(feature)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {typeConfig.supportsTier && (
+                    <div className="properties-field">
+                      <label htmlFor="card-tier">Уровень</label>
+                      <Input
+                        id="card-tier"
+                        value={cardFields.subclassTier}
+                        onInput={onCardFieldInput<HTMLInputElement>("subclassTier")}
+                      />
+                    </div>
+                  )}
+                  {typeConfig.supportsSpellcast && (
+                    <div className="properties-field">
+                      <label htmlFor="card-spellcast">Spellcast</label>
+                      <Input
+                        id="card-spellcast"
+                        value={cardFields.spellcast}
+                        onInput={onCardFieldInput<HTMLInputElement>("spellcast", stripMarkdownLinks)}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="properties-section">
+                  <h3>Медиа</h3>
+                  <div className="properties-field">
+                    <label htmlFor="card-divider">Разделитель</label>
+                    <Input
+                      id="card-divider"
+                      value={cardFields.dividerImage}
+                      placeholder={typeConfig.defaultDivider}
+                      onInput={onCardFieldInput<HTMLInputElement>("dividerImage")}
+                    />
+                  </div>
+                  {typeConfig.supportsBanner && (
+                    <>
+                      <div className="properties-field">
+                        <label htmlFor="card-banner-image">Баннер</label>
+                        <Input
+                          id="card-banner-image"
+                          value={cardFields.bannerImage}
+                          onInput={onCardFieldInput<HTMLInputElement>("bannerImage")}
+                        />
+                      </div>
+                      <div className="properties-field">
+                        <label htmlFor="card-banner-text">Текст баннера</label>
+                        <Input
+                          id="card-banner-text"
+                          value={cardFields.bannerText}
+                          onInput={onCardFieldInput<HTMLInputElement>("bannerText")}
+                        />
+                      </div>
+                    </>
+                  )}
+                  {typeConfig.supportsStress && (
+                    <>
+                      <div className="properties-field">
+                        <label htmlFor="card-stress-image">Иконка стресса</label>
+                        <Input
+                          id="card-stress-image"
+                          value={cardFields.stressImage}
+                          onInput={onCardFieldInput<HTMLInputElement>("stressImage")}
+                        />
+                      </div>
+                      <div className="properties-field">
+                        <label htmlFor="card-stress-text">Стоимость</label>
+                        <Input
+                          id="card-stress-text"
+                          value={cardFields.stressText}
+                          onInput={onCardFieldInput<HTMLInputElement>("stressText")}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="properties-section">
+                  <h3>Метаданные</h3>
+                  <div className="properties-field">
+                    <label htmlFor="card-slug">ID</label>
+                    <Input
+                      id="card-slug"
+                      value={cardFields.slug}
+                      onInput={onCardFieldInput<HTMLInputElement>("slug")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-classes">Доп. классы</label>
+                    <Input
+                      id="card-classes"
+                      value={cardFields.customClasses}
+                      placeholder="Например: bard spell"
+                      onInput={onCardFieldInput<HTMLInputElement>("customClasses")}
+                    />
+                  </div>
+                  <div className="properties-field">
+                    <label htmlFor="card-data-source">data-source</label>
+                    <Input
+                      id="card-data-source"
+                      value={cardFields.dataSource}
+                      onInput={onCardFieldInput<HTMLInputElement>("dataSource")}
+                    />
+                  </div>
+                  {typeConfig.supportsDataClass && (
+                    <div className="properties-field">
+                      <label htmlFor="card-data-class">data-class</label>
+                      <Input
+                        id="card-data-class"
+                        value={cardFields.dataClass}
+                        onInput={onCardFieldInput<HTMLInputElement>("dataClass")}
+                      />
+                    </div>
+                  )}
+                  {typeConfig.supportsDataDomain && (
+                    <div className="properties-field">
+                      <label htmlFor="card-data-domain">data-domain</label>
+                      <Input
+                        id="card-data-domain"
+                        value={cardFields.dataDomain}
+                        onInput={onCardFieldInput<HTMLInputElement>("dataDomain")}
+                      />
+                    </div>
+                  )}
+                  <div className="properties-field">
+                    <label htmlFor="card-button-href">Ссылка</label>
+                    <Input
+                      id="card-button-href"
+                      value={cardFields.buttonHref}
+                      placeholder="https://..."
+                      onInput={onCardFieldInput<HTMLInputElement>("buttonHref")}
+                    />
+                  </div>
+                </div>
+
+                <Button className="export-button" onClick={handleExportPNG} disabled={isExporting}>
+                  {isExporting ? "Экспортируем…" : "Экспорт PNG"}
+                </Button>
+                {exportError && <p className="export-error">{exportError}</p>}
               </aside>
             </>
           ) : (
