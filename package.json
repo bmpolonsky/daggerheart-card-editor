@@ -13,9 +13,9 @@
     "preact": "10.27.2"
   },
   "devDependencies": {
-    "@types/node": "22.18.13",
     "@preact/preset-vite": "2.10.2",
+    "@types/node": "22.18.13",
     "typescript": "5.9.3",
-    "vite": "5.4.21"
+    "vite": "7.1.12"
   }
 }

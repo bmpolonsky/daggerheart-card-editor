@@ -12,4 +12,13 @@ export default defineConfig({
       "@": resolve(workspaceRoot, "src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 });
