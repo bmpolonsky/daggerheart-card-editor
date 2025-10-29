@@ -9,19 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.1",
-    "clsx": "^2.1.1",
-    "html-to-image": "^1.11.11",
-    "lucide-react": "^0.422.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "html-to-image": "1.11.13",
+    "preact": "10.27.2"
   },
   "devDependencies": {
-    "@types/node": "^22.5.4",
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.1"
+    "@types/node": "22.18.13",
+    "@preact/preset-vite": "2.10.2",
+    "typescript": "5.9.3",
+    "vite": "5.4.21"
   }
 }

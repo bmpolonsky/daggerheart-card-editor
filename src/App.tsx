@@ -1,10 +1,19 @@
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef } from "preact/hooks";
+import type { TargetedEvent } from "preact";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  IconChevronRight,
+  IconClose,
+  IconGrid3x3,
+  IconHelpCircle,
+  IconRotateCw,
+  IconSearch,
+  IconUpload,
+} from "@/components/icons";
 import "./App.css";
-import { Search, RotateCw, HelpCircle, X, Upload, ChevronRight, Grid3x3 } from "lucide-react";
 
 const ancestryCards = [
   { id: 1, name: "Clank", image: "https://ext.same-assets.com/2698655591/974273112.webp", category: "ancestry" },
@@ -87,6 +96,12 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const onInputChange = <Element extends HTMLInputElement | HTMLTextAreaElement>(
+    setter: (value: string) => void
+  ) => (event: TargetedEvent<Element, Event>) => {
+    setter(event.currentTarget.value);
+  };
+
   const filteredAncestry = ancestryCards.filter((card) =>
     card.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -113,8 +128,9 @@ export default function App() {
     setCustomImage(null);
   };
 
-  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = (event: TargetedEvent<HTMLInputElement, Event>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -205,12 +221,12 @@ export default function App() {
       <aside className="sidebar">
         <div className="sidebar__search">
           <div className="sidebar__search-field">
-            <Search className="sidebar__search-icon" />
+            <IconSearch className="sidebar__search-icon" />
             <Input
               type="text"
               placeholder="Search templates..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={onInputChange<HTMLInputElement>(setSearchTerm)}
               className="input--search"
             />
           </div>
@@ -220,7 +236,7 @@ export default function App() {
           <div className="sidebar__templates-header">
             <h2 className="template-group__title">Base Card Templates</h2>
             <Button variant="ghost" size="icon" aria-label="Shuffle templates">
-              <RotateCw />
+              <IconRotateCw />
             </Button>
           </div>
 
@@ -243,7 +259,7 @@ export default function App() {
               </svg>
             </Button>
             <Button variant="ghost" size="icon" aria-label="Help">
-              <HelpCircle />
+              <IconHelpCircle />
             </Button>
           </div>
         </div>
@@ -268,7 +284,7 @@ export default function App() {
             <div className="workspace__selection">
               <span className="workspace__selection-label">{cardTitle}</span>
               <Button variant="ghost" size="icon" aria-label="Close editor" onClick={handleCloseEditor}>
-                <X />
+                <IconClose />
               </Button>
             </div>
           )}
@@ -315,7 +331,7 @@ export default function App() {
                       ) : (
                         <div>
                           <div className="card-canvas__upload-icon">
-                            <Upload width={24} height={24} color="#374151" />
+                            <IconUpload width={24} height={24} stroke="#374151" />
                           </div>
                           <p style={{ textAlign: "center", color: "#4b5563", fontSize: "0.875rem" }}>
                             Upload Custom Image
@@ -345,7 +361,7 @@ export default function App() {
                         <input
                           type="text"
                           value={cardTitle}
-                          onChange={(event) => setCardTitle(event.target.value)}
+                          onChange={onInputChange<HTMLInputElement>(setCardTitle)}
                           style={{
                             fontSize: "1.875rem",
                             fontWeight: 700,
@@ -356,7 +372,7 @@ export default function App() {
                         <input
                           type="text"
                           value={cardType}
-                          onChange={(event) => setCardType(event.target.value)}
+                          onChange={onInputChange<HTMLInputElement>(setCardType)}
                           className="card-canvas__type"
                         />
                       </div>
@@ -364,7 +380,7 @@ export default function App() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         <textarea
                           value={cardDescription}
-                          onChange={(event) => setCardDescription(event.target.value)}
+                          onChange={onInputChange<HTMLTextAreaElement>(setCardDescription)}
                           rows={2}
                           style={{ fontStyle: "italic" }}
                         />
@@ -373,13 +389,13 @@ export default function App() {
                           <input
                             type="text"
                             value={ability1Title}
-                            onChange={(event) => setAbility1Title(event.target.value)}
+                            onChange={onInputChange<HTMLInputElement>(setAbility1Title)}
                             style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
                           />
                           <span>: </span>
                           <textarea
                             value={ability1Text}
-                            onChange={(event) => setAbility1Text(event.target.value)}
+                            onChange={onInputChange<HTMLTextAreaElement>(setAbility1Text)}
                             rows={3}
                           />
                         </div>
@@ -388,13 +404,13 @@ export default function App() {
                           <input
                             type="text"
                             value={ability2Title}
-                            onChange={(event) => setAbility2Title(event.target.value)}
+                            onChange={onInputChange<HTMLInputElement>(setAbility2Title)}
                             style={{ fontWeight: 700, fontStyle: "italic", width: "auto" }}
                           />
                           <span>: </span>
                           <textarea
                             value={ability2Text}
-                            onChange={(event) => setAbility2Text(event.target.value)}
+                            onChange={onInputChange<HTMLTextAreaElement>(setAbility2Text)}
                             rows={2}
                           />
                         </div>
@@ -419,21 +435,21 @@ export default function App() {
               <aside className="properties-panel">
                 <div className="toggle-row">
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Grid3x3 width={20} height={20} color="hsl(var(--primary))" />
+                    <IconGrid3x3 width={20} height={20} stroke="hsl(var(--primary))" />
                     <h2 style={{ margin: 0, fontSize: "1rem" }}>Card Properties</h2>
                   </div>
-                  <ChevronRight color="hsl(var(--muted-foreground))" />
+                  <IconChevronRight stroke="hsl(var(--muted-foreground))" />
                 </div>
 
                 <div className="properties-section">
                   <h3>Header Image</h3>
-                  <Button
-                    variant="secondary"
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{ backgroundColor: "#4a4b5f" }}
-                  >
-                    <Upload width={16} height={16} />
-                    Upload
+                    <Button
+                      variant="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ backgroundColor: "#4a4b5f" }}
+                    >
+                      <IconUpload width={16} height={16} />
+                      Upload
                   </Button>
                 </div>
 

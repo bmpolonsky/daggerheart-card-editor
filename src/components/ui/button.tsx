@@ -1,4 +1,5 @@
-import { forwardRef } from "react";
+import { forwardRef } from "preact/compat";
+import type { JSX } from "preact";
 import { cn } from "@/lib/utils";
 import "./button.css";
 
@@ -12,8 +13,9 @@ type ButtonVariant =
 
 type ButtonSize = "md" | "sm" | "lg" | "icon";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonNativeProps = JSX.IntrinsicElements["button"];
+
+export interface ButtonProps extends ButtonNativeProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
 }

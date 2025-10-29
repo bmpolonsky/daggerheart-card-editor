@@ -1,10 +1,7 @@
-import { useEffect, type ReactNode } from "react";
+import type { ComponentChildren } from "preact";
+import { useEffect } from "preact/hooks";
 
-export default function ClientBody({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function ClientBody({ children }: { children: ComponentChildren }) {
   useEffect(() => {
     document.body.className = "antialiased";
   }, []);

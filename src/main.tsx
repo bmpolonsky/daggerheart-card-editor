@@ -1,13 +1,15 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { render } from "preact";
 import App from "./App";
 import ClientBody from "./ClientBody";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+  render(
     <ClientBody>
       <App />
-    </ClientBody>
-  </React.StrictMode>
-);
+    </ClientBody>,
+    rootElement
+  );
+}

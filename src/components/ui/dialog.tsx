@@ -1,13 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type PropsWithChildren,
-} from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { createContext } from "preact";
+import type { ComponentChildren } from "preact";
+import { createPortal } from "preact/compat";
+import { useContext, useEffect, useMemo, useState } from "preact/hooks";
+import type { JSX } from "preact";
+import { IconClose } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import "./dialog.css";
 
@@ -17,9 +13,10 @@ type DialogContextValue = {
 
 const DialogContext = createContext<DialogContextValue | null>(null);
 
-interface DialogProps extends PropsWithChildren {
+interface DialogProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
+  children: ComponentChildren;
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
@@ -47,9 +44,9 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   );
 }
 
-interface DialogContentProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DialogContentProps extends JSX.HTMLAttributes<HTMLDivElement> {
   hideCloseButton?: boolean;
+  children: ComponentChildren;
 }
 
 export function DialogContent({
@@ -78,7 +75,7 @@ export function DialogContent({
             onClick={context.close}
             aria-label="Close dialog"
           >
-            <X />
+            <IconClose />
           </button>
         )}
         {children}
@@ -90,6 +87,6 @@ export function DialogContent({
 export const DialogTitle = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) => (
+}: JSX.HTMLAttributes<HTMLHeadingElement>) => (
   <h2 className={cn("dialog__title", className)} {...props} />
 );
