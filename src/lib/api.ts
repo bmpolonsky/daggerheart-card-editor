@@ -33,6 +33,15 @@ export interface TemplateCard {
   sourceName: string | null;
   category: TemplateCategoryId;
   features: TemplateFeature[];
+  artAttribution?: string | null;
+  classSlug?: string | null;
+  className?: string | null;
+  spellcastTrait?: string | null;
+  domainSlug?: string | null;
+  domainName?: string | null;
+  cardType?: string | null;
+  stressCost?: number | null;
+  level?: number | null;
 }
 
 export interface TemplateGroup {
@@ -65,6 +74,15 @@ type RawTemplateItem = {
   description?: string;
   image_url?: string | null;
   source_name?: string | null;
+  art_attribution?: string | null;
+  class_slug?: string | null;
+  class_name?: string | null;
+  spellcast_trait?: string | null;
+  domain_slug?: string | null;
+  domain_name?: string | null;
+  card_type?: string | null;
+  stress_cost?: number | null;
+  level?: number | null;
   features?: RawFeature[];
   foundation_features?: RawFeature[];
   specialization_features?: RawFeature[];
@@ -171,6 +189,15 @@ function mapTemplateItem(category: TemplateCategoryId, item: RawTemplateItem): T
     sourceName: item.source_name ?? null,
     category,
     features,
+    artAttribution: item.art_attribution ?? null,
+    classSlug: item.class_slug ?? null,
+    className: item.class_name ?? null,
+    spellcastTrait: item.spellcast_trait ?? null,
+    domainSlug: item.domain_slug ?? null,
+    domainName: item.domain_name ?? null,
+    cardType: item.card_type ?? null,
+    stressCost: item.stress_cost ?? null,
+    level: item.level ?? null,
   };
 }
 

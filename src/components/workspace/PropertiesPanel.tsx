@@ -215,58 +215,6 @@ export function PropertiesPanel({
         )}
       </div>
 
-      <div className="properties-section">
-        <h3>Метаданные</h3>
-        <Field label="ID">
-          <Input
-            id="card-slug"
-            value={cardFields.slug}
-            onInput={onFieldInput<HTMLInputElement>("slug")}
-          />
-        </Field>
-        <Field label="Доп. классы">
-          <Input
-            id="card-classes"
-            value={cardFields.customClasses}
-            placeholder="Например: bard spell"
-            onInput={onFieldInput<HTMLInputElement>("customClasses")}
-          />
-        </Field>
-        <Field label="data-source">
-          <Input
-            id="card-data-source"
-            value={cardFields.dataSource}
-            onInput={onFieldInput<HTMLInputElement>("dataSource")}
-          />
-        </Field>
-        {typeConfig.supportsDataClass && (
-          <Field label="data-class">
-            <Input
-              id="card-data-class"
-              value={cardFields.dataClass}
-              onInput={onFieldInput<HTMLInputElement>("dataClass")}
-            />
-          </Field>
-        )}
-        {typeConfig.supportsDataDomain && (
-          <Field label="data-domain">
-            <Input
-              id="card-data-domain"
-              value={cardFields.dataDomain}
-              onInput={onFieldInput<HTMLInputElement>("dataDomain")}
-            />
-          </Field>
-        )}
-        <Field label="Ссылка">
-          <Input
-            id="card-button-href"
-            value={cardFields.buttonHref}
-            placeholder="https://..."
-            onInput={onFieldInput<HTMLInputElement>("buttonHref")}
-          />
-        </Field>
-      </div>
-
       <Button className="export-button" onClick={onExport} disabled={isExporting}>
         {isExporting ? "Экспортируем…" : "Экспорт PNG"}
       </Button>
