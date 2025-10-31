@@ -352,6 +352,22 @@
   min-height: 100%;
 }
 
+.card-preview-scope .card .prelude a,
+.card-preview-scope .card .description a,
+.card-preview-scope .card .spellcast a {
+  color: #2f74c3;
+  text-decoration: underline;
+  text-decoration-color: rgba(47, 116, 195, 0.4);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.card-preview-scope .card .prelude a:hover,
+.card-preview-scope .card .description a:hover,
+.card-preview-scope .card .spellcast a:hover {
+  color: #4bb4ff;
+  text-decoration-color: currentColor;
+}
+
 .card-feature-editor {
   display: flex;
   flex-direction: column;

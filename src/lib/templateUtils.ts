@@ -1,11 +1,9 @@
 import type { TemplateFeature } from "@/lib/api";
 
-const LINK_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/g;
-
 export const FALLBACK_FEATURE_NAME = "Без названия";
 
 export function stripMarkdownLinks(value: string) {
-  return value.replace(LINK_PATTERN, "$1");
+  return value;
 }
 
 export function normalizeFeatureName(feature?: TemplateFeature) {
@@ -24,7 +22,5 @@ function formatFeatureContent(feature: TemplateFeature) {
 }
 
 export function buildAggregatedContent(features: TemplateFeature[]) {
-  return stripMarkdownLinks(
-    features.map(formatFeatureContent).filter(Boolean).join("\n\n")
-  );
+  return features.map(formatFeatureContent).filter(Boolean).join("\n\n");
 }

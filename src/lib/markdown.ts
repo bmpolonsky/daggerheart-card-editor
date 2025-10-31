@@ -1,6 +1,6 @@
 const HEADING_REGEX = /^(#{1,3})\s+(.*)$/;
 const LIST_ITEM_REGEX = /^-\s+(.*)$/;
-const LINK_REGEX = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+const LINK_REGEX = /\[([^\]]+)\]\(([^)\s]+)\)/g;
 const BOLD_ITALIC_REGEX = /\*\*\*([^*]+)\*\*\*/g;
 const BOLD_REGEX = /\*\*([^*]+)\*\*/g;
 const ITALIC_REGEX = /\*([^*]+)\*/g;
@@ -15,13 +15,44 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
+function sanitizeHref(rawUrl: string) {
+  const value = rawUrl.trim();
+  if (!value) return null;
+
+  const lowered = value.toLowerCase();
+  if (lowered.startsWith("javascript:") || lowered.startsWith("data:")) {
+    return null;
+  }
+
+  if (
+    lowered.startsWith("http://") ||
+    lowered.startsWith("https://") ||
+    lowered.startsWith("/") ||
+    lowered.startsWith("./") ||
+    lowered.startsWith("../") ||
+    lowered.startsWith("#")
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
 function transformInline(markdown: string) {
   let output = escapeHtml(markdown);
 
   output = output.replace(LINK_REGEX, (_match, label, url) => {
     const safeLabel = escapeHtml(label);
-    const safeUrl = escapeHtml(url);
-    return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+    const sanitizedUrl = sanitizeHref(url);
+    if (!sanitizedUrl) {
+      return safeLabel;
+    }
+
+    const escapedUrl = escapeHtml(sanitizedUrl);
+    const isExternal = /^https?:\/\//i.test(sanitizedUrl);
+    const rel = isExternal ? ' rel="noopener noreferrer"' : "";
+    const target = isExternal ? ' target="_blank"' : "";
+    return `<a href="${escapedUrl}"${target}${rel}>${safeLabel}</a>`;
   });
 
   output = output.replace(BOLD_ITALIC_REGEX, "<strong><em>$1</em></strong>");
