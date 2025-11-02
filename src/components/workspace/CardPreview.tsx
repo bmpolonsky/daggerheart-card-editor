@@ -123,7 +123,7 @@ export function CardPreview({
                 {typeConfig.supportsSpellcast && cardFields.spellcast && (
                   <p className="spellcast" dangerouslySetInnerHTML={{ __html: spellcastHtml }} />
                 )}
-                {cardFields.prelude.trim() && (
+                {typeConfig.supportsPrelude && cardFields.prelude.trim() && (
                   <div className="prelude" dangerouslySetInnerHTML={{ __html: preludeHtml }} />
                 )}
                 {cardFields.description.trim() && (

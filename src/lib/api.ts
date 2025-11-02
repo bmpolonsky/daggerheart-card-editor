@@ -112,7 +112,7 @@ const SUBCLASS_FEATURE_KEYS = [
 ] as const;
 
 const SUBCLASS_GROUP_LABEL: Record<(typeof SUBCLASS_FEATURE_KEYS)[number], string> = {
-  foundation_features: "Базовая особенность",
+  foundation_features: "Основа",
   specialization_features: "Специализация",
   mastery_features: "Мастерство",
 };
@@ -145,7 +145,7 @@ function extractFeatures(category: TemplateCategoryId, item: RawTemplateItem): T
       const lines = list.map((feature) => formatFeatureText(feature)).filter(Boolean);
       if (lines.length === 0) continue;
 
-      const mergedText = [`***${groupLabel}:***`, ...lines].join("\n\n");
+      const mergedText = lines.join("\n\n");
 
       features.push({
         id: key,

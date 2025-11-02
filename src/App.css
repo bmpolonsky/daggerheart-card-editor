@@ -368,6 +368,18 @@
   text-decoration-color: currentColor;
 }
 
+.card-preview-scope .card ul,
+.card-preview-scope .card ol {
+  margin: 0;
+  padding-left: 0;
+  list-style-position: inside;
+}
+
+.card-preview-scope .card ul li,
+.card-preview-scope .card ol li {
+  margin: 0;
+}
+
 .card-feature-editor {
   display: flex;
   flex-direction: column;

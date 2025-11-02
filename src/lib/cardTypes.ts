@@ -10,6 +10,7 @@ export interface CardTypeConfig {
   pathSegment: string;
   defaultDivider?: string;
   supportsBanner: boolean;
+  supportsPrelude: boolean;
   supportsSpellcast: boolean;
   supportsTier: boolean;
   supportsStress: boolean;
@@ -26,6 +27,7 @@ export const CARD_TYPE_CONFIG: Record<CardTypeId, CardTypeConfig> = {
     pathSegment: "ancestry",
     defaultDivider: "https://daggerheart.su/image/ancestry/divider.avif",
     supportsBanner: false,
+    supportsPrelude: true,
     supportsSpellcast: false,
     supportsTier: false,
     supportsStress: false,
@@ -40,6 +42,7 @@ export const CARD_TYPE_CONFIG: Record<CardTypeId, CardTypeConfig> = {
     pathSegment: "community",
     defaultDivider: "https://daggerheart.su/image/community/divider.webp",
     supportsBanner: false,
+    supportsPrelude: true,
     supportsSpellcast: false,
     supportsTier: false,
     supportsStress: false,
@@ -54,6 +57,7 @@ export const CARD_TYPE_CONFIG: Record<CardTypeId, CardTypeConfig> = {
     pathSegment: "subclass",
     defaultDivider: "",
     supportsBanner: true,
+    supportsPrelude: false,
     supportsSpellcast: true,
     supportsTier: true,
     supportsStress: false,
@@ -68,6 +72,7 @@ export const CARD_TYPE_CONFIG: Record<CardTypeId, CardTypeConfig> = {
     pathSegment: "domain-card",
     defaultDivider: "",
     supportsBanner: true,
+    supportsPrelude: false,
     supportsSpellcast: false,
     supportsTier: false,
     supportsStress: true,

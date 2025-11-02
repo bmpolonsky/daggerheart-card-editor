@@ -128,15 +128,17 @@ export function PropertiesPanel({
             onInput={onFieldInput<HTMLInputElement>("attribution")}
           />
         </Field>
-        <Field label="Прелюдия">
-          <textarea
-            id="card-prelude"
-            className="properties-textarea"
-            value={cardFields.prelude}
-            onInput={onFieldInput<HTMLTextAreaElement>("prelude", stripMarkdownLinks)}
-            rows={3}
-          />
-        </Field>
+        {typeConfig.supportsPrelude && (
+          <Field label="Прелюдия">
+            <textarea
+              id="card-prelude"
+              className="properties-textarea"
+              value={cardFields.prelude}
+              onInput={onFieldInput<HTMLTextAreaElement>("prelude", stripMarkdownLinks)}
+              rows={3}
+            />
+          </Field>
+        )}
         <Field label="Описание">
           <textarea
             id="card-description"
