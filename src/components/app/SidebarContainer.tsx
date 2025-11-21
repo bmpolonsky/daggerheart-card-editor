@@ -94,16 +94,16 @@ export function SidebarContainer({ onReload }: SidebarContainerProps) {
 
     const dividerImage =
       card.category === "subclass" && card.classSlug
-        ? buildAsset(`/image/class/divider/${card.classSlug}.avif`)
+        ? buildAsset(`/image/class/divider/${card.classSlug.replace('playtest-', '')}.avif`)
         : card.category === "domain-card" && card.domainSlug
-        ? buildAsset(`/image/domain/divider/${card.domainSlug}.avif`)
+        ? buildAsset(`/image/domain/divider/${card.domainSlug.replace('playtest-', '')}.avif`)
         : typeConfig.defaultDivider ?? "";
 
     const bannerImage =
       card.category === "subclass" && card.classSlug
-        ? buildAsset(`/image/class/banner/${card.classSlug}.avif`)
+        ? buildAsset(`/image/class/banner/${card.classSlug.replace('playtest-', '')}.avif`)
         : card.category === "domain-card" && card.domainSlug
-        ? buildAsset(`/image/domain/banner/${card.domainSlug}.avif`)
+        ? buildAsset(`/image/domain/banner/${card.domainSlug.replace('playtest-', '')}.avif`)
         : "";
 
     const label =

@@ -8,7 +8,7 @@ export default function App() {
   const { reload } = useTemplateLoader();
 
   return (
-    <div className="app-shell">
+    <div className="app-shell russian">
       <SidebarContainer onReload={reload} />
       <WorkspaceContainer />
     </div>

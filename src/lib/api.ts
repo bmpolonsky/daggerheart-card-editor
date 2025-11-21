@@ -91,7 +91,7 @@ type RawTemplateItem = {
 
 function resolveImage(imageUrl?: string | null) {
   if (!imageUrl) {
-    return null;
+    imageUrl = "/image/wip.avif";
   }
 
   if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {

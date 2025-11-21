@@ -19,6 +19,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      "/font": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
+      },
     },
   },
 });

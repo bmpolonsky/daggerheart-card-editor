@@ -355,10 +355,11 @@
 .card-preview-scope .card .prelude a,
 .card-preview-scope .card .description a,
 .card-preview-scope .card .spellcast a {
-  color: #2f74c3;
+  color: #000000;
   text-decoration: underline;
-  text-decoration-color: rgba(47, 116, 195, 0.4);
   transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  text-decoration: underline 1px dotted rgba(0, 0, 0, 0.533);
+
 }
 
 .card-preview-scope .card .prelude a:hover,
