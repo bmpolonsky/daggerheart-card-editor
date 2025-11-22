@@ -352,35 +352,6 @@
   min-height: 100%;
 }
 
-.card-preview-scope .card .prelude a,
-.card-preview-scope .card .description a,
-.card-preview-scope .card .spellcast a {
-  color: #000000;
-  text-decoration: underline;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
-  text-decoration: underline 1px dotted rgba(0, 0, 0, 0.533);
-
-}
-
-.card-preview-scope .card .prelude a:hover,
-.card-preview-scope .card .description a:hover,
-.card-preview-scope .card .spellcast a:hover {
-  color: #4bb4ff;
-  text-decoration-color: currentColor;
-}
-
-.card-preview-scope .card ul,
-.card-preview-scope .card ol {
-  margin: 0;
-  padding-left: 0;
-  list-style-position: inside;
-}
-
-.card-preview-scope .card ul li,
-.card-preview-scope .card ol li {
-  margin: 0;
-}
-
 .card-feature-editor {
   display: flex;
   flex-direction: column;
