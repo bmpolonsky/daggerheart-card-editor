@@ -1,15 +1,10 @@
-import type { TemplateCard, TemplateGroup } from "@/lib/api";
+import type { TemplateCard } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconRotateCw, IconSearch } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { TargetedEvent } from "preact";
-
-export interface TemplateGroupView extends TemplateGroup {
-  filteredItems: TemplateCard[];
-  expanded: boolean;
-  toggle: () => void;
-}
+import type { TemplateGroupView } from "@/services/templatesService";
 
 interface TemplateSidebarProps {
   searchTerm: string;
@@ -59,7 +54,13 @@ export function TemplateSidebar({
               onClick={() => onSelectCard(card)}
             >
               {card.image ? (
-                <img src={card.image} alt={card.name} className="template-card__image" />
+                <img
+                  src={card.image}
+                  alt={card.name}
+                  className="template-card__image"
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : (
                 <div className="template-card__placeholder">Нет изображения</div>
               )}

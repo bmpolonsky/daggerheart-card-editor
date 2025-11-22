@@ -39,6 +39,7 @@ interface CardWorkspaceProps {
   isExporting: boolean;
   exportError: string | null;
   stripMarkdownLinks: (value: string) => string;
+  onRequestImageUploadFromPanel: () => void;
 }
 
 export function CardWorkspace({
@@ -61,6 +62,7 @@ export function CardWorkspace({
   onSubclassFeatureChange,
   onImageUpload,
   onRequestImageUpload,
+  onRequestImageUploadFromPanel,
   preludeHtml,
   descriptionHtml,
   spellcastHtml,
@@ -112,6 +114,7 @@ export function CardWorkspace({
         isExporting={isExporting}
         exportError={exportError}
         stripMarkdownLinks={stripMarkdownLinks}
+        onRequestImageUpload={onRequestImageUploadFromPanel}
       />
     </>
   );

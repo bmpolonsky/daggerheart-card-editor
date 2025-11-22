@@ -40,6 +40,7 @@ export function CardPreview({
       <div className="card_holder print">
         <div
           ref={cardRef}
+          key={cardFields.slug || cardFields.title || "card"}
           id={cardFields.slug || undefined}
           className={[
             "card",
@@ -86,6 +87,8 @@ export function CardPreview({
                     : selectedCard?.name ?? "Изображение"
                 }
                 className="card_image"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="card-preview__image-placeholder">
@@ -98,13 +101,13 @@ export function CardPreview({
           </div>
 
           {typeConfig.supportsStress && cardFields.stressImage && (
-            <img className="stress_image" src={cardFields.stressImage} alt="" />
+            <img className="stress_image" src={cardFields.stressImage} alt="" loading="lazy" decoding="async" />
           )}
           {typeConfig.supportsStress && cardFields.stressText && (
             <p className="stress_text">{cardFields.stressText}</p>
           )}
           {typeConfig.supportsBanner && cardFields.bannerImage && (
-            <img className="banner_image" src={cardFields.bannerImage} alt="" />
+            <img className="banner_image" src={cardFields.bannerImage} alt="" loading="lazy" decoding="async" />
           )}
           {typeConfig.supportsBanner && cardFields.bannerText && (
             <p className="banner_text">{cardFields.bannerText}</p>
@@ -135,7 +138,7 @@ export function CardPreview({
               </div>
             </div>
             {cardFields.dividerImage ? (
-              <img className="divider" src={cardFields.dividerImage} alt="" />
+              <img className="divider" src={cardFields.dividerImage} alt="" loading="lazy" decoding="async" />
             ) : (
               <div className="card-preview__divider-placeholder" />
             )}

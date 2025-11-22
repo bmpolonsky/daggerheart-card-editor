@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "preact/hooks";
+import { useMemo, useRef } from "preact/hooks";
 import type { JSX } from "preact";
 import { Button } from "@/components/ui/button";
 import { IconClose } from "@/components/icons";
@@ -7,16 +7,11 @@ import { useStore } from "@/lib/store";
 import { templatesStore } from "@/stores/templates";
 import { editorStore } from "@/stores/editor";
 import { exportStore } from "@/stores/export";
-import {
-  CARD_TYPE_CONFIG,
-  DEFAULT_CARD_TYPE_ID,
-  createEmptyCardFields,
-  type CardFields,
-  type CardTypeId,
-} from "@/lib/cardTypes";
+import { CARD_TYPE_CONFIG, type CardFields, type CardTypeId } from "@/lib/cardTypes";
 import { renderMarkdown } from "@/lib/markdown";
 import { stripMarkdownLinks } from "@/lib/templateUtils";
-import { inlineExternalImages } from "@/lib/exportUtils";
+import { editorService } from "@/services/editorService";
+import { exportService } from "@/services/exportService";
 
 type CardFieldInputFactory = <
   Element extends HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
@@ -30,134 +25,44 @@ export function WorkspaceContainer() {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const { lastFetchedAt } = useStore(templatesStore);
-  const { selectedCard, selectedTypeId, cardFields, customImage, selectedFeatureIndex } =
-    useStore(editorStore);
+  const { selectedCard, selectedTypeId, cardFields, customImage, selectedFeatureIndex } = useStore(editorStore);
   const { isExporting, exportError } = useStore(exportStore);
 
-  const handleCloseEditor = useCallback(() => {
-    editorStore.update(() => ({
-      selectedCard: null,
-      selectedTypeId: DEFAULT_CARD_TYPE_ID,
-      cardFields: createEmptyCardFields(),
-      customImage: null,
-      selectedFeatureIndex: 0,
-    }));
+  const handleCloseEditor = () => {
+    editorService.closeEditor();
+  };
 
-    exportStore.update(() => ({
-      isExporting: false,
-      exportError: null,
-    }));
-  }, []);
-
-  const handleImageUpload = useCallback((event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+  const handleImageUpload = (event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
     const input = event.currentTarget;
     const file = input.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      editorStore.update((prev) => ({
-        ...prev,
-        customImage: result,
-      }));
-    };
-    reader.readAsDataURL(file);
-  }, []);
+    void editorService.loadImageFromFile(file);
+  };
 
-  const onCardFieldInput: CardFieldInputFactory = useCallback(
-    (field, transform) => (event) => {
-      const value = event.currentTarget.value;
-      editorStore.update((prev) => ({
-        ...prev,
-        cardFields: {
-          ...prev.cardFields,
-          [field]: transform ? transform(value) : value,
-        },
-      }));
-    },
-    []
-  );
+  const onCardFieldInput: CardFieldInputFactory = (field, transform) => (event) => {
+    const value = event.currentTarget.value;
+    editorService.setField(field, value, transform);
+  };
 
-  const handleSubclassFeatureChange = useCallback(
-    (event: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
-      const index = Number(event.currentTarget.value);
-      editorStore.update((prev) => {
-        const feature = prev.selectedCard?.features[index];
-        return {
-          ...prev,
-          selectedFeatureIndex: index,
-          cardFields: {
-            ...prev.cardFields,
-            description: stripMarkdownLinks(feature?.text ?? ""),
-            subclassTier: feature?.group ?? prev.cardFields.subclassTier,
-          },
-        };
-      });
-    },
-    []
-  );
+  const handleSubclassFeatureChange = (event: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+    const index = Number(event.currentTarget.value);
+    editorService.setSubclassFeature(index);
+  };
 
-  const handleTypeChange = useCallback((event: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
+  const handleTypeChange = (event: JSX.TargetedEvent<HTMLSelectElement, Event>) => {
     const nextType = event.currentTarget.value as CardTypeId;
-    editorStore.update((prev) => {
-      const nextConfig = CARD_TYPE_CONFIG[nextType];
-      return {
-        ...prev,
-        selectedTypeId: nextType,
-        cardFields: {
-          ...prev.cardFields,
-          label: prev.cardFields.label || nextConfig.cardLabel,
-          dividerImage: prev.cardFields.dividerImage || nextConfig.defaultDivider || "",
-        },
-      };
-    });
-  }, []);
+    editorService.setCardType(nextType);
+  };
 
-  const handleExportPNG = useCallback(async () => {
+  const handleExportPNG = async () => {
     if (!cardRef.current) return;
+    await exportService.exportCurrentCard(cardRef.current);
+  };
 
-    exportStore.update((state) => ({
-      ...state,
-      exportError: null,
-      isExporting: true,
-    }));
-
-    let restoreImages: (() => void) | undefined;
-
-    try {
-      restoreImages = await inlineExternalImages(cardRef.current);
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 2,
-        backgroundColor: "transparent",
-        skipFonts: false,
-      });
-
-      const link = document.createElement("a");
-      const currentFields = editorStore.getState().cardFields;
-      const safeTitle = currentFields.title.trim() || "карта";
-      link.download = `${safeTitle}-карта.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error("PNG export failed", err);
-      exportStore.update((state) => ({
-        ...state,
-        exportError: "Не удалось экспортировать PNG. Попробуйте ещё раз.",
-      }));
-    } finally {
-      restoreImages?.();
-      exportStore.update((state) => ({
-        ...state,
-        isExporting: false,
-      }));
-    }
-  }, []);
-
-  const handleRequestImageUpload = useCallback(() => {
+  const handleRequestImageUpload = () => {
     fileInputRef.current?.click();
-  }, []);
+  };
 
   const lastUpdatedLabel = useMemo(() => {
     if (!lastFetchedAt) {
@@ -236,11 +141,12 @@ export function WorkspaceContainer() {
             onFieldInput={onCardFieldInput}
             onSubclassFeatureChange={handleSubclassFeatureChange}
             onImageUpload={handleImageUpload}
-            onRequestImageUpload={handleRequestImageUpload}
-            preludeHtml={preludeHtml}
-            descriptionHtml={descriptionHtml}
-            spellcastHtml={spellcastHtml}
-            onExport={handleExportPNG}
+          onRequestImageUpload={handleRequestImageUpload}
+          onRequestImageUploadFromPanel={handleRequestImageUpload}
+          preludeHtml={preludeHtml}
+          descriptionHtml={descriptionHtml}
+          spellcastHtml={spellcastHtml}
+          onExport={handleExportPNG}
             isExporting={isExporting}
             exportError={exportError}
             stripMarkdownLinks={stripMarkdownLinks}

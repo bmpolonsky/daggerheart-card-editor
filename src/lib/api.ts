@@ -1,6 +1,4 @@
-const API_HOST = "https://daggerheart.su";
-const API_BASE_PATH = "/api";
-const API_BASE_URL = import.meta.env.DEV ? API_BASE_PATH : `${API_HOST}${API_BASE_PATH}`;
+const API_BASE_URL = "/api";
 
 export type TemplateCategoryId = "subclass" | "ancestry" | "community" | "domain-card";
 
@@ -89,6 +87,19 @@ type RawTemplateItem = {
   mastery_features?: RawFeature[];
 };
 
+function optimizeAssetPath(path: string) {
+  const domainCardMatch = path.match(/^\/image\/domain\/card\/([^/.]+)(\.[a-zA-Z0-9]+)?$/);
+  if (domainCardMatch) {
+    return `/image/domain/card/small/${domainCardMatch[1]}.avif`;
+  }
+  const genericMatch = path.match(/^\/image\/(.+?)\/([^/.]+)\.(jpe?g|png|webp)$/);
+  if (genericMatch) {
+    const [, folder, slug] = genericMatch;
+    return `/image/${folder}/small/${slug}.avif`;
+  }
+  return path;
+}
+
 function resolveImage(imageUrl?: string | null) {
   if (!imageUrl) {
     imageUrl = "/image/wip.avif";
@@ -98,11 +109,11 @@ function resolveImage(imageUrl?: string | null) {
     return imageUrl;
   }
 
-  try {
-    return new URL(imageUrl, API_HOST).toString();
-  } catch {
-    return null;
+  if (imageUrl.startsWith("/")) {
+    return optimizeAssetPath(imageUrl);
   }
+
+  return optimizeAssetPath(`/${imageUrl.replace(/^\/+/, "")}`);
 }
 
 const SUBCLASS_FEATURE_KEYS = [

@@ -19,7 +19,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      "/cards.css": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
+      },
       "/font": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
+      },
+      "/image": {
         target: "https://daggerheart.su",
         changeOrigin: true,
         secure: true,

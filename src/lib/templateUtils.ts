@@ -3,7 +3,8 @@ import type { TemplateFeature } from "@/lib/api";
 export const FALLBACK_FEATURE_NAME = "Без названия";
 
 export function stripMarkdownLinks(value: string) {
-  return value;
+  if (!value) return "";
+  return value.replace(/\[([^[\]]+)\]\([^)]+\)/g, "$1");
 }
 
 export function normalizeFeatureName(feature?: TemplateFeature) {

@@ -1,15 +1,14 @@
 import "./App.css";
-import "@/external/daggerheart-cards.css";
 import { SidebarContainer } from "@/components/app/SidebarContainer";
 import { WorkspaceContainer } from "@/components/app/WorkspaceContainer";
-import { useTemplateLoader } from "@/hooks/useTemplateLoader";
+import { templatesService } from "@/services/templatesService";
 
 export default function App() {
-  const { reload } = useTemplateLoader();
+  templatesService.ensureLoaded();
 
   return (
     <div className="app-shell russian">
-      <SidebarContainer onReload={reload} />
+      <SidebarContainer onReload={() => void templatesService.reload()} />
       <WorkspaceContainer />
     </div>
   );

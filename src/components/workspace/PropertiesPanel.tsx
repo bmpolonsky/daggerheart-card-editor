@@ -30,6 +30,7 @@ interface PropertiesPanelProps {
   isExporting: boolean;
   exportError: string | null;
   stripMarkdownLinks: (value: string) => string;
+  onRequestImageUpload: () => void;
 }
 
 export function PropertiesPanel({
@@ -47,6 +48,7 @@ export function PropertiesPanel({
   isExporting,
   exportError,
   stripMarkdownLinks,
+  onRequestImageUpload,
 }: PropertiesPanelProps) {
   const typeOptions = CARD_TYPE_LIST;
 
@@ -99,14 +101,14 @@ export function PropertiesPanel({
 
       <div className="properties-section properties-section--form">
         <h3>Основные поля</h3>
-        <Field label="Заголовок">
+        <Field label="Название карты">
           <Input
             id="card-title"
             value={cardFields.title}
             onInput={onFieldInput<HTMLInputElement>("title")}
           />
         </Field>
-        <Field label="Подпись">
+        <Field label="Подпись (лейбл)">
           <Input
             id="card-label"
             value={cardFields.label}
@@ -114,22 +116,8 @@ export function PropertiesPanel({
             onInput={onFieldInput<HTMLInputElement>("label")}
           />
         </Field>
-        <Field label="Источник">
-          <Input
-            id="card-source"
-            value={cardFields.source}
-            onInput={onFieldInput<HTMLInputElement>("source")}
-          />
-        </Field>
-        <Field label="Автор">
-          <Input
-            id="card-attribution"
-            value={cardFields.attribution}
-            onInput={onFieldInput<HTMLInputElement>("attribution")}
-          />
-        </Field>
         {typeConfig.supportsPrelude && (
-          <Field label="Прелюдия">
+          <Field label="Прелюдия / вступление">
             <textarea
               id="card-prelude"
               className="properties-textarea"
@@ -150,7 +138,7 @@ export function PropertiesPanel({
         </Field>
         {renderFeatureOptions()}
         {typeConfig.supportsTier && (
-          <Field label="Уровень">
+          <Field label="Уровень (для подкласса)">
             <Input
               id="card-tier"
               value={cardFields.subclassTier}
@@ -159,7 +147,7 @@ export function PropertiesPanel({
           </Field>
         )}
         {typeConfig.supportsSpellcast && (
-          <Field label="Spellcast">
+          <Field label="Заклинатель (Spellcast)">
             <Input
               id="card-spellcast"
               value={cardFields.spellcast}
@@ -167,10 +155,29 @@ export function PropertiesPanel({
             />
           </Field>
         )}
+        <Field label="Источник">
+          <Input
+            id="card-source"
+            value={cardFields.source}
+            onInput={onFieldInput<HTMLInputElement>("source")}
+          />
+        </Field>
+        <Field label="Художник">
+          <Input
+            id="card-attribution"
+            value={cardFields.attribution}
+            onInput={onFieldInput<HTMLInputElement>("attribution")}
+          />
+        </Field>
       </div>
 
       <div className="properties-section">
-        <h3>Медиа</h3>
+        <h3>Обложка</h3>
+        <div className="properties-field">
+          <Button variant="secondary" onClick={onRequestImageUpload}>
+            Загрузить обложку
+          </Button>
+        </div>
         <Field label="Разделитель">
           <Input
             id="card-divider"
