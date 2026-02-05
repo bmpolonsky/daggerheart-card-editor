@@ -51,6 +51,14 @@ export function PropertiesPanel({
   onRequestImageUpload,
 }: PropertiesPanelProps) {
   const typeOptions = CARD_TYPE_LIST;
+  const fontSizeOptions = [
+    { value: "", label: "По умолчанию" },
+    { value: "0.75rem", label: "Мелкий (0.75rem)" },
+    { value: "0.8rem", label: "Чуть меньше (0.8rem)" },
+    { value: "0.85rem", label: "Средний (0.85rem)" },
+    { value: "0.9rem", label: "Крупный (0.9rem)" },
+    { value: "0.95rem", label: "Очень крупный (0.95rem)" },
+  ];
 
   const renderFeatureOptions = () => {
     if (!isSubclass || !selectedCard || features.length === 0) {
@@ -135,6 +143,20 @@ export function PropertiesPanel({
             onInput={onFieldInput<HTMLTextAreaElement>("description", stripMarkdownLinks)}
             rows={isSubclass ? 12 : 14}
           />
+        </Field>
+        <Field label="Размер текста карточки">
+          <select
+            id="card-body-font-size"
+            className="card-feature-editor__select"
+            value={cardFields.bodyFontSize}
+            onChange={onFieldInput<HTMLSelectElement>("bodyFontSize")}
+          >
+            {fontSizeOptions.map((option) => (
+              <option key={option.value || "default"} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </Field>
         {renderFeatureOptions()}
         {typeConfig.supportsTier && (

@@ -105,6 +105,7 @@ export interface CardFields {
   stressText: string;
   dividerImage: string;
   buttonHref: string;
+  bodyFontSize: string;
 }
 
 export function createEmptyCardFields(): CardFields {
@@ -128,5 +129,6 @@ export function createEmptyCardFields(): CardFields {
     stressText: "",
     dividerImage: "",
     buttonHref: "",
+    bodyFontSize: "",
   };
 }
