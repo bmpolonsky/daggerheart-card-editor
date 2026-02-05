@@ -336,6 +336,24 @@
   min-height: 100%;
 }
 
+.card-preview-scope .card .prelude,
+.card-preview-scope .card .description,
+.card-preview-scope .card .spellcast,
+.card-preview-scope .card .prelude p,
+.card-preview-scope .card .description p,
+.card-preview-scope .card .spellcast p,
+.card-preview-scope .card .prelude li,
+.card-preview-scope .card .description li,
+.card-preview-scope .card .spellcast li,
+.card-preview-scope .card .prelude ul,
+.card-preview-scope .card .description ul,
+.card-preview-scope .card .spellcast ul,
+.card-preview-scope .card .prelude ol,
+.card-preview-scope .card .description ol,
+.card-preview-scope .card .spellcast ol {
+  font-size: var(--card-body-font-size);
+}
+
 .card-feature-editor {
   display: flex;
   flex-direction: column;

@@ -2,7 +2,7 @@ import type { RefObject } from "preact";
 import type { TemplateCard } from "@/lib/api";
 import type { CardFields, CardTypeConfig } from "@/lib/cardTypes";
 import { IconUpload } from "@/components/icons";
-import type { TargetedEvent } from "preact";
+import type { TargetedEvent, JSX } from "preact";
 import { stripInlineMarkers } from "@/lib/text";
 
 interface CardPreviewProps {
@@ -46,6 +46,10 @@ export function CardPreview({
   const imageAlt = stripInlineMarkers(
     customImage ? "Пользовательское изображение" : selectedCard?.name ?? "Изображение"
   );
+  const bodyFontSize = cardFields.bodyFontSize.trim();
+  const bodyFontStyle = bodyFontSize
+    ? ({ "--card-body-font-size": bodyFontSize } as JSX.CSSProperties)
+    : undefined;
 
   return (
     <div className="card-preview card-preview-scope">
@@ -61,6 +65,7 @@ export function CardPreview({
           ]
             .filter(Boolean)
             .join(" ")}
+          style={bodyFontStyle}
           {...(cardFields.dataSource && { "data-source": cardFields.dataSource })}
           {...(typeConfig.supportsDataClass && cardFields.dataClass && {
             "data-class": cardFields.dataClass,

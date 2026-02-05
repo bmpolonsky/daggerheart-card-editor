@@ -125,6 +125,7 @@ export function buildCardFieldsFromTemplate(card: TemplateCard) {
         ? String(card.stressCost)
         : "",
     buttonHref: `/${typeConfig.pathSegment}/${card.slug}`,
+    bodyFontSize: "",
   };
 
   return {
