@@ -39,7 +39,7 @@ function resolveDividerImage(card: TemplateCard, typeId: CardTypeId) {
     return buildAsset(`/image/domain/divider/${trimPlaytestPrefix(card.domainSlug)}.avif`);
   }
 
-  return typeConfig.defaultDivider ?? "";
+  return buildAsset(typeConfig.defaultDivider ?? "");
 }
 
 function resolveBannerImage(card: TemplateCard, typeId: CardTypeId) {

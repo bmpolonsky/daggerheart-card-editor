@@ -1,4 +1,4 @@
-const API_BASE_URL = "/api";
+import { API_BASE_URL, ASSET_BASE_PATH } from "@/lib/constants";
 
 export type TemplateCategoryId = "subclass" | "ancestry" | "community" | "domain-card";
 
@@ -110,10 +110,10 @@ function resolveImage(imageUrl?: string | null) {
   }
 
   if (imageUrl.startsWith("/")) {
-    return optimizeAssetPath(imageUrl);
+    return `${ASSET_BASE_PATH}${optimizeAssetPath(imageUrl)}`;
   }
 
-  return optimizeAssetPath(`/${imageUrl.replace(/^\/+/, "")}`);
+  return `${ASSET_BASE_PATH}${optimizeAssetPath(`/${imageUrl.replace(/^\/+/, "")}`)}`;
 }
 
 const SUBCLASS_FEATURE_KEYS = [
@@ -212,9 +212,17 @@ function mapTemplateItem(category: TemplateCategoryId, item: RawTemplateItem): T
   };
 }
 
+function getCategoryUrl(endpoint: string) {
+  if (API_BASE_URL) {
+    return `${API_BASE_URL}/${endpoint}?lang=ru`;
+  }
+
+  return `${import.meta.env.BASE_URL}data/${endpoint}.json`;
+}
+
 async function fetchCategory(category: TemplateCategoryId): Promise<TemplateGroup> {
   const config = CATEGORY_CONFIG[category];
-  const response = await fetch(`${API_BASE_URL}/${config.endpoint}?lang=ru`, {
+  const response = await fetch(getCategoryUrl(config.endpoint), {
     headers: {
       Accept: "application/json",
     },
