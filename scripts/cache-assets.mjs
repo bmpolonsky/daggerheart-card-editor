@@ -1,7 +1,9 @@
-import { mkdir, writeFile, access } from "node:fs/promises";
+import { mkdir, writeFile, access, readFile } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
 
 const BASE_URL = process.env.ASSET_SOURCE ?? "https://daggerheart.su";
+const ASSET_MODE = process.env.ASSET_MODE ?? "full";
+const SHOULD_REFRESH = process.env.ASSET_REFRESH === "1";
 const PUBLIC_DIR = resolve("public");
 const DATA_DIR = resolve("public/data");
 const CSS_FILES = ["/styles.css", "/cards.css"];
@@ -70,27 +72,43 @@ function addOptimizedAsset(pathname) {
   addAsset(optimizeAssetPath(normalized));
 }
 
+function rewriteCssUrls(cssText) {
+  return cssText.replace(/url\((['"]?)\/(?!\/)/g, "url($1./");
+}
+
 function extractUrlsFromCss(cssText) {
   const matches = cssText.matchAll(/url\(([^)]+)\)/g);
   for (const match of matches) {
     const raw = match[1].trim().replace(/^['"]|['"]$/g, "");
     if (!raw || raw.startsWith("data:")) continue;
     if (raw.startsWith("http://") || raw.startsWith("https://")) continue;
-    addAsset(raw);
+    const normalized = raw.startsWith("./") ? `/${raw.slice(2)}` : raw;
+    addAsset(normalized);
   }
 }
 
 async function downloadCss() {
   for (const file of CSS_FILES) {
-    const url = `${cleanBase}${file}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download ${url} (${response.status})`);
+    const targetPath = resolve(PUBLIC_DIR, `.${file}`);
+    let cssText = "";
+    if (!SHOULD_REFRESH && (await fileExists(targetPath))) {
+      cssText = await readFile(targetPath, "utf8");
+    } else {
+      const url = `${cleanBase}${file}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to download ${url} (${response.status})`);
+      }
+      cssText = await response.text();
     }
-    const cssText = await response.text();
-    await ensureDir(PUBLIC_DIR);
-    await writeFile(resolve(PUBLIC_DIR, `.${file}`), cssText);
+
     extractUrlsFromCss(cssText);
+
+    const rewrittenCss = rewriteCssUrls(cssText);
+    if (!(await fileExists(targetPath)) || rewrittenCss !== cssText || SHOULD_REFRESH) {
+      await ensureDir(PUBLIC_DIR);
+      await writeFile(targetPath, rewrittenCss);
+    }
   }
 }
 
@@ -135,12 +153,14 @@ async function downloadData() {
 
 async function main() {
   await downloadCss();
-  await downloadData();
+  if (ASSET_MODE !== "css") {
+    await downloadData();
 
-  addAsset("/image/wip.avif");
-  addAsset("/image/domain/stress-cost.avif");
-  addAsset("/image/ancestry/divider.avif");
-  addAsset("/image/community/divider.webp");
+    addAsset("/image/wip.avif");
+    addAsset("/image/domain/stress-cost.avif");
+    addAsset("/image/ancestry/divider.avif");
+    addAsset("/image/community/divider.webp");
+  }
 
   for (const asset of assetSet) {
     try {
