@@ -283,22 +283,6 @@
   max-width: 520px;
 }
 
-.card-preview-scope {
-  --main-bg-color: #2d2e46;
-  --darker-bg-color: #27263e;
-  --divider-color: #4a4c71;
-  --light-divider-color: #6b6d8c;
-  --input-color: #454666;
-  --backdrop-color: #1d1e2c;
-  --text-color: #ffffff;
-  --faded-text-color: #9192a7;
-  --header-color: #c9b1ff;
-}
-
-.card-preview.card-preview-scope .card_holder {
-  justify-content: center;
-}
-
 .card-preview__image {
   display: flex;
   align-items: center;
