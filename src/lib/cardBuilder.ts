@@ -23,32 +23,19 @@ function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function trimPlaytestPrefix(value: string | null | undefined) {
-  if (!value) return "";
-  return value.replace("playtest-", "");
-}
-
 function resolveDividerImage(card: TemplateCard, typeId: CardTypeId) {
   const typeConfig = CARD_TYPE_CONFIG[typeId];
 
-  if (typeId === "subclass" && card.classSlug) {
-    return buildAsset(`/image/class/divider/${trimPlaytestPrefix(card.classSlug)}.avif`);
-  }
-
-  if (typeId === "domain-card" && card.domainSlug) {
-    return buildAsset(`/image/domain/divider/${trimPlaytestPrefix(card.domainSlug)}.avif`);
+  if (typeId === "subclass" || typeId === "domain-card") {
+    return "";
   }
 
   return buildAsset(typeConfig.defaultDivider ?? "");
 }
 
 function resolveBannerImage(card: TemplateCard, typeId: CardTypeId) {
-  if (typeId === "subclass" && card.classSlug) {
-    return buildAsset(`/image/class/banner/${trimPlaytestPrefix(card.classSlug)}.avif`);
-  }
-
-  if (typeId === "domain-card" && card.domainSlug) {
-    return buildAsset(`/image/domain/banner/${trimPlaytestPrefix(card.domainSlug)}.avif`);
+  if (typeId === "subclass" || typeId === "domain-card") {
+    return "";
   }
 
   return "";
@@ -97,16 +84,24 @@ export function buildCardFieldsFromTemplate(card: TemplateCard) {
   const typeConfig = CARD_TYPE_CONFIG[typeId];
   const description = resolveDescription(card, typeId);
   const label = resolveLabel(card, typeId);
+  const domainSlugs =
+    card.domainSlugs ??
+    (card.domainSlug ? [card.domainSlug] : []);
+  const primaryDomain = domainSlugs[0] ?? "";
+  const secondaryDomain = domainSlugs[1] ?? "";
+
+  const baseClasses = [card.slug, card.classSlug, card.cardType];
+  const domainClasses = typeId === "domain-card"
+    ? [card.domainSlug, primaryDomain, secondaryDomain]
+    : [];
 
   const cardFields: CardFields = {
     ...createEmptyCardFields(),
     slug: card.slug,
-    customClasses: [card.slug, card.classSlug, card.domainSlug, card.cardType]
-      .filter(Boolean)
-      .join(" "),
+    customClasses: [...baseClasses, ...domainClasses].filter(Boolean).join(" "),
     dataSource: card.sourceName ?? "",
     dataClass: card.classSlug ?? "",
-    dataDomain: card.domainSlug ?? "",
+    dataDomain: primaryDomain,
     title: card.name,
     prelude: stripMarkdownLinks(card.description ?? ""),
     description,
@@ -125,6 +120,8 @@ export function buildCardFieldsFromTemplate(card: TemplateCard) {
         ? String(card.stressCost)
         : "",
     buttonHref: `/${typeConfig.pathSegment}/${card.slug}`,
+    domainPrimary: primaryDomain,
+    domainSecondary: secondaryDomain,
     bodyFontSize: "",
   };
 

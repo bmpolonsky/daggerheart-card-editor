@@ -122,7 +122,15 @@ export function CardPreview({
             <p className="stress_text">{displayStressText}</p>
           )}
           {typeConfig.supportsBanner && cardFields.bannerImage && (
-            <img className="banner_image" src={cardFields.bannerImage} alt="" loading="lazy" decoding="async" />
+            cardFields.bannerImage.trim().startsWith("<svg") ? (
+              <div
+                className="banner_image"
+                aria-hidden="true"
+                dangerouslySetInnerHTML={{ __html: cardFields.bannerImage }}
+              />
+            ) : (
+              <img className="banner_image" src={cardFields.bannerImage} alt="" loading="lazy" decoding="async" />
+            )
           )}
           {typeConfig.supportsBanner && cardFields.bannerText && (
             <p className="banner_text">{displayBannerText}</p>
@@ -153,7 +161,15 @@ export function CardPreview({
               </div>
             </div>
             {cardFields.dividerImage ? (
-              <img className="divider" src={cardFields.dividerImage} alt="" loading="lazy" decoding="async" />
+              cardFields.dividerImage.trim().startsWith("<svg") ? (
+                <div
+                  className="divider"
+                  aria-hidden="true"
+                  dangerouslySetInnerHTML={{ __html: cardFields.dividerImage }}
+                />
+              ) : (
+                <img className="divider" src={cardFields.dividerImage} alt="" loading="lazy" decoding="async" />
+              )
             ) : (
               <div className="card-preview__divider-placeholder" />
             )}

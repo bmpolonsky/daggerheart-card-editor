@@ -11,21 +11,31 @@ import { stripMarkdownLinks } from "@/lib/templateUtils";
 import { editorStore } from "@/stores/editor";
 import { exportStore } from "@/stores/export";
 import { prefetchImages } from "@/lib/assetPrefetcher";
+import { buildClassBanner, buildClassDivider, buildDomainBanner, buildDomainDivider } from "@/lib/domainAssets";
+import { domainService } from "@/services/domainService";
+import { domainStore } from "@/stores/domains";
 
 type FieldTransformer = (value: string) => string;
 
 export class EditorService {
   readonly store = editorStore;
 
+  constructor() {
+    domainStore.subscribe(() => {
+      this.refreshDomainAssets();
+    });
+  }
+
   selectCard(card: TemplateCard) {
     const { cardFields, typeId, selectedFeatureIndex } = buildCardFieldsFromTemplate(card);
+    const nextFields = this.applyDomainAssets(cardFields, typeId);
 
-    this.prefetchAssets(cardFields, card.image);
+    this.prefetchAssets(nextFields, card.image);
 
     editorStore.update(() => ({
       selectedCard: card,
       selectedTypeId: typeId,
-      cardFields,
+      cardFields: nextFields,
       customImage: null,
       selectedFeatureIndex,
     }));
@@ -54,7 +64,7 @@ export class EditorService {
   setCardType(nextType: CardTypeId) {
     editorStore.update((prev) => {
       const nextConfig = CARD_TYPE_CONFIG[nextType];
-      return {
+      const nextFields = {
         ...prev,
         selectedTypeId: nextType,
         cardFields: {
@@ -63,16 +73,40 @@ export class EditorService {
           dividerImage: prev.cardFields.dividerImage || nextConfig.defaultDivider || "",
         },
       };
+
+      return {
+        ...nextFields,
+        cardFields: this.applyDomainAssets(nextFields.cardFields, nextType),
+      };
     });
   }
 
   setField(field: keyof CardFields, value: string, transform?: FieldTransformer) {
-    editorStore.update((prev) => ({
-      ...prev,
-      cardFields: {
+    editorStore.update((prev) => {
+      const nextFields = {
         ...prev.cardFields,
         [field]: transform ? transform(value) : value,
-      },
+      } as CardFields;
+
+      return {
+        ...prev,
+        cardFields: this.applyDomainAssets(nextFields, prev.selectedTypeId),
+      };
+    });
+  }
+
+  setDomainPrimary(value: string) {
+    this.setField("domainPrimary", value);
+  }
+
+  setDomainSecondary(value: string) {
+    this.setField("domainSecondary", value);
+  }
+
+  refreshDomainAssets() {
+    editorStore.update((prev) => ({
+      ...prev,
+      cardFields: this.applyDomainAssets(prev.cardFields, prev.selectedTypeId),
     }));
   }
 
@@ -116,6 +150,46 @@ export class EditorService {
       cardFields.stressImage,
       cardImage,
     ]);
+  }
+
+  private applyDomainAssets(cardFields: CardFields, typeId: CardTypeId): CardFields {
+    if (typeId !== "domain-card" && typeId !== "subclass") {
+      return cardFields;
+    }
+
+    const primaryId = cardFields.domainPrimary || cardFields.dataDomain;
+    const secondaryId = cardFields.domainSecondary || primaryId;
+    const primaryTheme = domainService.getTheme(primaryId) ?? {
+      id: primaryId || "",
+      name: primaryId || "",
+      color: "#6b7280",
+      icon: null,
+      source: "custom" as const,
+    };
+    const secondaryTheme = domainService.getTheme(secondaryId) ?? primaryTheme;
+
+    const bannerImage =
+      typeId === "domain-card"
+        ? buildDomainBanner(primaryTheme)
+        : buildClassBanner(primaryTheme, secondaryTheme);
+    const dividerImage =
+      typeId === "domain-card"
+        ? buildDomainDivider(primaryTheme)
+        : buildClassDivider(primaryTheme, secondaryTheme);
+
+    const classSet = new Set(cardFields.customClasses.split(" ").filter(Boolean));
+    if (typeId === "domain-card") {
+      if (primaryTheme.id) classSet.add(primaryTheme.id);
+      if (secondaryTheme.id) classSet.add(secondaryTheme.id);
+    }
+
+    return {
+      ...cardFields,
+      bannerImage,
+      dividerImage,
+      dataDomain: typeId === "domain-card" ? primaryTheme.id : cardFields.dataDomain,
+      customClasses: Array.from(classSet).join(" "),
+    };
   }
 }
 

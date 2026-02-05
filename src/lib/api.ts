@@ -36,6 +36,7 @@ export interface TemplateCard {
   className?: string | null;
   spellcastTrait?: string | null;
   domainSlug?: string | null;
+  domainSlugs?: string[] | null;
   domainName?: string | null;
   cardType?: string | null;
   stressCost?: number | null;
@@ -77,6 +78,7 @@ type RawTemplateItem = {
   class_name?: string | null;
   spellcast_trait?: string | null;
   domain_slug?: string | null;
+  domain_slugs?: string[] | null;
   domain_name?: string | null;
   card_type?: string | null;
   stress_cost?: number | null;
@@ -205,6 +207,7 @@ function mapTemplateItem(category: TemplateCategoryId, item: RawTemplateItem): T
     className: item.class_name ?? null,
     spellcastTrait: item.spellcast_trait ?? null,
     domainSlug: item.domain_slug ?? null,
+    domainSlugs: item.domain_slugs ?? null,
     domainName: item.domain_name ?? null,
     cardType: item.card_type ?? null,
     stressCost: item.stress_cost ?? null,

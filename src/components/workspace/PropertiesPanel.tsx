@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { JSX } from "preact";
 import { normalizeFeatureName } from "@/lib/templateUtils";
+import { useStore } from "@/lib/store";
+import { domainStore } from "@/stores/domains";
 
 type CardFieldInputFactory = <
   Element extends HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
@@ -51,6 +53,9 @@ export function PropertiesPanel({
   onRequestImageUpload,
 }: PropertiesPanelProps) {
   const typeOptions = CARD_TYPE_LIST;
+  const { domains } = useStore(domainStore);
+  const domainOptions = [...domains].sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  const isDomainCard = selectedTypeId === "domain-card";
   const fontSizeOptions = [
     { value: "", label: "По умолчанию" },
     { value: "0.65rem", label: "Совсем мелкий жесть (0.65rem)" },
@@ -83,6 +88,71 @@ export function PropertiesPanel({
             </option>
           ))}
         </select>
+      </div>
+    );
+  };
+
+  const renderDomainSelectors = () => {
+    if (!isSubclass && !isDomainCard) return null;
+
+    if (domainOptions.length === 0) {
+      return (
+        <div className="properties-field">
+          <label>Домены</label>
+          <p className="properties-hint">Нет доступных доменов. Откройте менеджер доменов в меню.</p>
+        </div>
+      );
+    }
+
+    if (isDomainCard) {
+      return (
+        <Field label="Домен">
+          <select
+            id="card-domain-primary"
+            className="card-feature-editor__select"
+            value={cardFields.domainPrimary}
+            onChange={onFieldInput<HTMLSelectElement>("domainPrimary")}
+          >
+            <option value="">Не выбран</option>
+            {domainOptions.map((domain) => (
+              <option key={domain.id} value={domain.id}>
+                {domain.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      );
+    }
+
+    return (
+      <div className="properties-field">
+        <label>Домены класса</label>
+        <div className="domain-selects">
+          <select
+            className="card-feature-editor__select"
+            value={cardFields.domainPrimary}
+            onChange={onFieldInput<HTMLSelectElement>("domainPrimary")}
+          >
+            <option value="">Домен 1</option>
+            {domainOptions.map((domain) => (
+              <option key={domain.id} value={domain.id}>
+                {domain.name}
+              </option>
+            ))}
+          </select>
+          <select
+            className="card-feature-editor__select"
+            value={cardFields.domainSecondary}
+            onChange={onFieldInput<HTMLSelectElement>("domainSecondary")}
+          >
+            <option value="">Домен 2</option>
+            {domainOptions.map((domain) => (
+              <option key={domain.id} value={domain.id}>
+                {domain.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     );
   };
@@ -201,31 +271,15 @@ export function PropertiesPanel({
             Загрузить обложку
           </Button>
         </div>
-        <Field label="Разделитель">
-          <Input
-            id="card-divider"
-            value={cardFields.dividerImage}
-            placeholder={typeConfig.defaultDivider}
-            onInput={onFieldInput<HTMLInputElement>("dividerImage")}
-          />
-        </Field>
+        {renderDomainSelectors()}
         {typeConfig.supportsBanner && (
-          <>
-            <Field label="Баннер">
-              <Input
-                id="card-banner-image"
-                value={cardFields.bannerImage}
-                onInput={onFieldInput<HTMLInputElement>("bannerImage")}
-              />
-            </Field>
-            <Field label="Текст баннера">
-              <Input
-                id="card-banner-text"
-                value={cardFields.bannerText}
-                onInput={onFieldInput<HTMLInputElement>("bannerText")}
-              />
-            </Field>
-          </>
+          <Field label="Текст баннера">
+            <Input
+              id="card-banner-text"
+              value={cardFields.bannerText}
+              onInput={onFieldInput<HTMLInputElement>("bannerText")}
+            />
+          </Field>
         )}
         {typeConfig.supportsStress && (
           <>

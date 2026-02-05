@@ -5,11 +5,7 @@ import { templatesStore } from "@/stores/templates";
 import { templatesService } from "@/services/templatesService";
 import { editorService } from "@/services/editorService";
 
-interface SidebarContainerProps {
-  onReload: () => void;
-}
-
-export function SidebarContainer({ onReload }: SidebarContainerProps) {
+export function SidebarContainer() {
   const { isLoading, error, searchTerm } = useStore(templatesStore);
   const configuredGroups = templatesService.buildGroupViews();
 
@@ -28,7 +24,6 @@ export function SidebarContainer({ onReload }: SidebarContainerProps) {
       isLoading={isLoading}
       error={error}
       groups={configuredGroups}
-      onReload={onReload}
       onSelectCard={handleCardClick}
     />
   );

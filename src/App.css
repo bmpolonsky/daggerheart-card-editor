@@ -569,3 +569,226 @@
     transform: rotate(360deg);
   }
 }
+
+.domain-selects {
+  display: grid;
+  gap: 8px;
+}
+
+.properties-hint {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.domain-manager__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 16, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  z-index: 2000;
+}
+
+.domain-manager {
+  width: min(820px, 94vw);
+  max-height: 85vh;
+  background: #11131b;
+  border: 1px solid rgba(118, 120, 151, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: hsl(var(--foreground));
+  overflow: hidden;
+}
+
+.domain-manager__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.domain-manager__subtitle {
+  margin: 6px 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+.domain-manager__controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.domain-manager__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.domain-manager__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.domain-manager__error {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  font-size: 0.85rem;
+}
+
+.domain-manager__list {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.domain-card-editor {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(118, 120, 151, 0.12);
+}
+
+.domain-card-editor__main {
+  display: grid;
+  gap: 8px;
+}
+
+.domain-card-editor__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.domain-card-editor__id {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.domain-card-editor__controls {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.domain-card-editor__controls input[type="color"] {
+  width: 44px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.domain-card-editor__icon {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.domain-card-editor__icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.35));
+}
+
+.domain-card-editor__placeholder {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(118, 120, 151, 0.2);
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.domain-card-editor__icon-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.domain-card-editor__upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(118, 120, 151, 0.25);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.domain-card-editor__upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.domain-manager__create {
+  border-top: 1px solid rgba(118, 120, 151, 0.2);
+  padding-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.domain-manager__create-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.divider svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.banner_image svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.banner_image {
+  transform: translateY(13px);
+}
+
+@media (max-width: 720px) {
+  .domain-manager__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .domain-card-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .domain-card-editor__meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

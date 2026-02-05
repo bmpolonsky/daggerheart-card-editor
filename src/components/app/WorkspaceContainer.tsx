@@ -1,8 +1,9 @@
-import { useMemo, useRef } from "preact/hooks";
+import { useMemo, useRef, useState } from "preact/hooks";
 import type { JSX } from "preact";
 import { Button } from "@/components/ui/button";
 import { IconClose } from "@/components/icons";
 import { CardWorkspace } from "@/components/workspace/CardWorkspace";
+import { DomainManager } from "@/components/domains/DomainManager";
 import { useStore } from "@/lib/store";
 import { templatesStore } from "@/stores/templates";
 import { editorStore } from "@/stores/editor";
@@ -24,6 +25,7 @@ type CardFieldInputFactory = <
 export function WorkspaceContainer() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [showDomainManager, setShowDomainManager] = useState(false);
 
   const { lastFetchedAt } = useStore(templatesStore);
   const { selectedCard, selectedTypeId, cardFields, customImage, selectedFeatureIndex } = useStore(editorStore);
@@ -97,9 +99,16 @@ export function WorkspaceContainer() {
   const selectedFeatures = selectedCard?.features ?? [];
 
   return (
-    <main className="workspace">
+    <>
+      <main className="workspace">
       <header className="workspace__header">
-        <Button variant="ghost" size="icon" className="workspace__menu" aria-label="Меню">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="workspace__menu"
+          aria-label="Меню"
+          onClick={() => setShowDomainManager(true)}
+        >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor">
             <rect x="3" y="3" width="7" height="7" />
             <rect x="14" y="3" width="7" height="7" />
@@ -143,12 +152,12 @@ export function WorkspaceContainer() {
             onFieldInput={onCardFieldInput}
             onSubclassFeatureChange={handleSubclassFeatureChange}
             onImageUpload={handleImageUpload}
-          onRequestImageUpload={handleRequestImageUpload}
-          onRequestImageUploadFromPanel={handleRequestImageUpload}
-          preludeHtml={preludeHtml}
-          descriptionHtml={descriptionHtml}
-          spellcastHtml={spellcastHtml}
-          onExport={handleExportPNG}
+            onRequestImageUpload={handleRequestImageUpload}
+            onRequestImageUploadFromPanel={handleRequestImageUpload}
+            preludeHtml={preludeHtml}
+            descriptionHtml={descriptionHtml}
+            spellcastHtml={spellcastHtml}
+            onExport={handleExportPNG}
             isExporting={isExporting}
             exportError={exportError}
             stripMarkdownLinks={stripMarkdownLinks}
@@ -177,6 +186,8 @@ export function WorkspaceContainer() {
           </section>
         )}
       </div>
-    </main>
+      </main>
+      {showDomainManager && <DomainManager onClose={() => setShowDomainManager(false)} />}
+    </>
   );
 }

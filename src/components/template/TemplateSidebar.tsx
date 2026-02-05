@@ -1,7 +1,6 @@
 import type { TemplateCard } from "@/lib/api";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { IconRotateCw, IconSearch } from "@/components/icons";
+import { IconSearch } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { stripInlineMarkers } from "@/lib/text";
 import type { TargetedEvent } from "preact";
@@ -13,7 +12,6 @@ interface TemplateSidebarProps {
   isLoading: boolean;
   error: string | null;
   groups: TemplateGroupView[];
-  onReload: () => void;
   onSelectCard: (card: TemplateCard) => void;
 }
 
@@ -23,7 +21,6 @@ export function TemplateSidebar({
   isLoading,
   error,
   groups,
-  onReload,
   onSelectCard,
 }: TemplateSidebarProps) {
   const handleSearchInput = (event: TargetedEvent<HTMLInputElement, Event>) => {
@@ -97,15 +94,6 @@ export function TemplateSidebar({
       <div className="sidebar__templates">
         <div className="sidebar__templates-header">
           <h2 className="template-group__title">Категории карт</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Обновить шаблоны"
-            onClick={onReload}
-            disabled={isLoading}
-          >
-            <IconRotateCw className={cn(isLoading && "sidebar__spinner")} />
-          </Button>
         </div>
 
         <div className="sidebar__scroll">

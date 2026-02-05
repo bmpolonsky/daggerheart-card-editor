@@ -13,6 +13,7 @@ const stripTrailingSlash = (value) => value.replace(/\/+$/, "");
 const cleanBase = stripTrailingSlash(BASE_URL);
 
 const assetSet = new Set();
+const domainEmblemSet = new Set();
 
 function ensureLeadingSlash(value) {
   if (!value.startsWith("/")) return `/${value}`;
@@ -123,8 +124,16 @@ function addCardAssets(item) {
   }
 
   if (item.domain_slug) {
-    addAsset(`/image/domain/divider/${item.domain_slug.replace("playtest-", "")}.avif`);
-    addAsset(`/image/domain/banner/${item.domain_slug.replace("playtest-", "")}.avif`);
+    const normalized = item.domain_slug.replace("playtest-", "");
+    addAsset(`/image/domain/divider/${normalized}.avif`);
+    addAsset(`/image/domain/banner/${normalized}.avif`);
+    domainEmblemSet.add(normalized);
+  }
+
+  if (Array.isArray(item.domain_slugs)) {
+    item.domain_slugs
+      .map((slug) => slug.replace("playtest-", ""))
+      .forEach((slug) => domainEmblemSet.add(slug));
   }
 }
 
@@ -140,10 +149,7 @@ async function downloadData() {
       throw new Error(`Failed to download ${url} (${response.status})`);
     }
     const payload = await response.json();
-    await writeFile(
-      join(DATA_DIR, `${endpoint}.json`),
-      JSON.stringify(payload, null, 2)
-    );
+    await writeFile(join(DATA_DIR, `${endpoint}.json`), JSON.stringify(payload, null, 2));
 
     if (payload?.data && Array.isArray(payload.data)) {
       payload.data.forEach(addCardAssets);
@@ -161,6 +167,10 @@ async function main() {
     addAsset("/image/ancestry/divider.avif");
     addAsset("/image/community/divider.webp");
   }
+
+  domainEmblemSet.forEach((slug) => {
+    addAsset(`/image/domain/emblems/${slug}.svg`);
+  });
 
   for (const asset of assetSet) {
     try {
