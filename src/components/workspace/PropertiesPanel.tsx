@@ -53,6 +53,7 @@ export function PropertiesPanel({
   const typeOptions = CARD_TYPE_LIST;
   const fontSizeOptions = [
     { value: "", label: "По умолчанию" },
+    { value: "0.65rem", label: "Совсем мелкий жесть (0.65rem)" },
     { value: "0.75rem", label: "Мелкий (0.75rem)" },
     { value: "0.8rem", label: "Чуть меньше (0.8rem)" },
     { value: "0.85rem", label: "Средний (0.85rem)" },
