@@ -25,4 +25,5 @@ export const SPELLCAST_TRAIT_TRANSLATIONS: Record<string, string> = {
 export const DOMAIN_CARD_TYPE_LABELS: Record<string, string> = {
   spell: "Заклинание",
   ability: "Умение",
+  grimoire: "Гримуар",
 };
