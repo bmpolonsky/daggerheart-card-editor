@@ -3,6 +3,7 @@ import type { TemplateCard } from "@/lib/api";
 import type { CardFields, CardTypeConfig } from "@/lib/cardTypes";
 import { IconUpload } from "@/components/icons";
 import type { TargetedEvent } from "preact";
+import { stripInlineMarkers } from "@/lib/text";
 
 interface CardPreviewProps {
   cardRef: RefObject<HTMLDivElement>;
@@ -35,6 +36,17 @@ export function CardPreview({
   descriptionHtml,
   spellcastHtml,
 }: CardPreviewProps) {
+  const displayTitle = stripInlineMarkers(cardFields.title) || "Без названия";
+  const displayLabel = stripInlineMarkers(cardLabel);
+  const displaySubclassTier = stripInlineMarkers(cardFields.subclassTier);
+  const displayBannerText = stripInlineMarkers(cardFields.bannerText);
+  const displayStressText = stripInlineMarkers(cardFields.stressText);
+  const displayAttribution = stripInlineMarkers(cardFields.attribution);
+  const displaySource = stripInlineMarkers(cardFields.source);
+  const imageAlt = stripInlineMarkers(
+    customImage ? "Пользовательское изображение" : selectedCard?.name ?? "Изображение"
+  );
+
   return (
     <div className="card-preview card-preview-scope">
       <div className="card_holder print">
@@ -82,9 +94,7 @@ export function CardPreview({
               <img
                 src={cardImage}
                 alt={
-                  customImage
-                    ? "Пользовательское изображение"
-                    : selectedCard?.name ?? "Изображение"
+                  imageAlt
                 }
                 className="card_image"
                 loading="lazy"
@@ -104,24 +114,24 @@ export function CardPreview({
             <img className="stress_image" src={cardFields.stressImage} alt="" loading="lazy" decoding="async" />
           )}
           {typeConfig.supportsStress && cardFields.stressText && (
-            <p className="stress_text">{cardFields.stressText}</p>
+            <p className="stress_text">{displayStressText}</p>
           )}
           {typeConfig.supportsBanner && cardFields.bannerImage && (
             <img className="banner_image" src={cardFields.bannerImage} alt="" loading="lazy" decoding="async" />
           )}
           {typeConfig.supportsBanner && cardFields.bannerText && (
-            <p className="banner_text">{cardFields.bannerText}</p>
+            <p className="banner_text">{displayBannerText}</p>
           )}
-          <p className="attribution">{cardFields.attribution}</p>
-          <p className="source">{cardFields.source}</p>
+          <p className="attribution">{displayAttribution}</p>
+          <p className="source">{displaySource}</p>
 
           <div className="flex">
             <div className="display">
               <div className="background" />
               <div className="text">
-                <p className="title">{cardFields.title || "Без названия"}</p>
+                <p className="title">{displayTitle}</p>
                 {typeConfig.supportsTier && cardFields.subclassTier && (
-                  <p className="subclass_tier">{cardFields.subclassTier}</p>
+                  <p className="subclass_tier">{displaySubclassTier}</p>
                 )}
                 {typeConfig.supportsSpellcast && cardFields.spellcast && (
                   <p className="spellcast" dangerouslySetInnerHTML={{ __html: spellcastHtml }} />
@@ -142,7 +152,7 @@ export function CardPreview({
             ) : (
               <div className="card-preview__divider-placeholder" />
             )}
-            <p className="label">{cardLabel}</p>
+            <p className="label">{displayLabel}</p>
           </div>
         </div>
       </div>

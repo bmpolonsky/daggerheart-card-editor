@@ -1,4 +1,5 @@
 import type { TemplateFeature } from "@/lib/api";
+import { stripInlineMarkers } from "@/lib/text";
 
 export const FALLBACK_FEATURE_NAME = "Без названия";
 
@@ -9,7 +10,8 @@ export function stripMarkdownLinks(value: string) {
 
 export function normalizeFeatureName(feature?: TemplateFeature) {
   if (!feature) return "";
-  return feature.name?.trim() || FALLBACK_FEATURE_NAME;
+  const cleaned = stripInlineMarkers(feature.name?.trim() || "");
+  return cleaned || FALLBACK_FEATURE_NAME;
 }
 
 function formatFeatureContent(feature: TemplateFeature) {

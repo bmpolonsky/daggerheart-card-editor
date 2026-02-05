@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconRotateCw, IconSearch } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { stripInlineMarkers } from "@/lib/text";
 import type { TargetedEvent } from "preact";
 import type { TemplateGroupView } from "@/services/templatesService";
 
@@ -47,26 +48,29 @@ export function TemplateSidebar({
       </button>
       {group.expanded && group.filteredItems.length > 0 && (
         <div className="template-grid">
-          {group.filteredItems.map((card) => (
-            <div
-              key={card.id}
-              className="template-card"
-              onClick={() => onSelectCard(card)}
-            >
-              {card.image ? (
-                <img
-                  src={card.image}
-                  alt={card.name}
-                  className="template-card__image"
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <div className="template-card__placeholder">Нет изображения</div>
-              )}
-              <div className="template-card__label">{card.name}</div>
-            </div>
-          ))}
+          {group.filteredItems.map((card) => {
+            const displayName = stripInlineMarkers(card.name);
+            return (
+              <div
+                key={card.id}
+                className="template-card"
+                onClick={() => onSelectCard(card)}
+              >
+                {card.image ? (
+                  <img
+                    src={card.image}
+                    alt={displayName}
+                    className="template-card__image"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div className="template-card__placeholder">Нет изображения</div>
+                )}
+                <div className="template-card__label">{displayName}</div>
+              </div>
+            );
+          })}
         </div>
       )}
       {group.expanded && group.filteredItems.length === 0 && (

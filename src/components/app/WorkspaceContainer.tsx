@@ -10,6 +10,7 @@ import { exportStore } from "@/stores/export";
 import { CARD_TYPE_CONFIG, type CardFields, type CardTypeId } from "@/lib/cardTypes";
 import { renderMarkdown } from "@/lib/markdown";
 import { stripMarkdownLinks } from "@/lib/templateUtils";
+import { stripInlineMarkers } from "@/lib/text";
 import { editorService } from "@/services/editorService";
 import { exportService } from "@/services/exportService";
 
@@ -92,6 +93,7 @@ export function WorkspaceContainer() {
     return html.replace(/^<p>/, "").replace(/<\/p>$/, "");
   }, [cardFields.spellcast]);
   const cardLabel = cardFields.label || typeConfig.cardLabel;
+  const displayTitle = stripInlineMarkers(cardFields.title || "Без названия");
   const selectedFeatures = selectedCard?.features ?? [];
 
   return (
@@ -107,7 +109,7 @@ export function WorkspaceContainer() {
         </Button>
         {selectedCard && (
           <div className="workspace__selection">
-            <span className="workspace__selection-label">{cardFields.title || "Без названия"}</span>
+            <span className="workspace__selection-label">{displayTitle}</span>
             <Button
               variant="ghost"
               size="icon"

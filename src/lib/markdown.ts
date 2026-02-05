@@ -1,3 +1,5 @@
+import { stripInlineMarkers } from "@/lib/text";
+
 const HEADING_REGEX = /^(#{1,3})\s+(.*)$/;
 const LIST_ITEM_REGEX = /^-\s+(.*)$/;
 const LINK_REGEX = /\[([^\]]+)\]\(([^)\s]+)\)/g;
@@ -39,7 +41,8 @@ function sanitizeHref(rawUrl: string) {
 }
 
 function transformInline(markdown: string) {
-  let output = escapeHtml(markdown);
+  let output = stripInlineMarkers(markdown);
+  output = escapeHtml(output);
 
   output = output.replace(LINK_REGEX, (_match, label, url) => {
     const safeLabel = escapeHtml(label);
