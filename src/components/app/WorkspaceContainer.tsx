@@ -1,11 +1,10 @@
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useMemo, useRef } from "preact/hooks";
 import type { JSX } from "preact";
 import { Button } from "@/components/ui/button";
 import { IconClose } from "@/components/icons";
 import { CardWorkspace } from "@/components/workspace/CardWorkspace";
-import { DomainManager } from "@/components/domains/DomainManager";
 import { useStore } from "@/lib/store";
-import { templatesStore } from "@/stores/templates";
+import { customCardsStore } from "@/stores/customCards";
 import { editorStore } from "@/stores/editor";
 import { exportStore } from "@/stores/export";
 import { CARD_TYPE_CONFIG, type CardFields, type CardTypeId } from "@/lib/cardTypes";
@@ -22,14 +21,17 @@ type CardFieldInputFactory = <
   transform?: (value: string) => string
 ) => (event: JSX.TargetedEvent<Element, Event>) => void;
 
-export function WorkspaceContainer() {
+interface WorkspaceContainerProps {
+  onOpenDomainManager: () => void;
+}
+
+export function WorkspaceContainer({ onOpenDomainManager }: WorkspaceContainerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [showDomainManager, setShowDomainManager] = useState(false);
 
-  const { lastFetchedAt } = useStore(templatesStore);
-  const { selectedCard, selectedTypeId, cardFields, customImage, selectedFeatureIndex } = useStore(editorStore);
+  const { selectedCard, selectedTypeId, cardFields, customImage, selectedFeatureIndex, customCardId } = useStore(editorStore);
   const { isExporting, exportError } = useStore(exportStore);
+  const { items: customCards, lastUpdatedAt } = useStore(customCardsStore);
 
   const handleCloseEditor = () => {
     editorService.closeEditor();
@@ -68,19 +70,23 @@ export function WorkspaceContainer() {
   };
 
   const lastUpdatedLabel = useMemo(() => {
-    if (!lastFetchedAt) {
+    const activeCustom = customCardId
+      ? customCards.find((item) => item.id === customCardId)?.updatedAt
+      : null;
+    const timestamp = activeCustom ?? lastUpdatedAt;
+    if (!timestamp) {
       return null;
     }
 
     try {
-      return new Date(lastFetchedAt).toLocaleString("ru-RU", {
+      return new Date(timestamp).toLocaleString("ru-RU", {
         dateStyle: "medium",
         timeStyle: "short",
       });
     } catch {
       return null;
     }
-  }, [lastFetchedAt]);
+  }, [customCards, customCardId, lastUpdatedAt]);
 
   const typeConfig = CARD_TYPE_CONFIG[selectedTypeId];
   const cardImage = customImage ?? selectedCard?.image ?? null;
@@ -102,20 +108,6 @@ export function WorkspaceContainer() {
     <>
       <main className="workspace">
       <header className="workspace__header">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="workspace__menu"
-          aria-label="Меню"
-          onClick={() => setShowDomainManager(true)}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-        </Button>
         {selectedCard && (
           <div className="workspace__selection">
             <span className="workspace__selection-label">{displayTitle}</span>
@@ -141,6 +133,7 @@ export function WorkspaceContainer() {
             selectedTypeId={selectedTypeId}
             headlineTitle={typeConfig.name}
             lastUpdatedLabel={lastUpdatedLabel}
+            showLastUpdated={Boolean(customCardId)}
             cardLabel={cardLabel}
             cardImage={cardImage}
             customImage={customImage}
@@ -161,6 +154,7 @@ export function WorkspaceContainer() {
             isExporting={isExporting}
             exportError={exportError}
             stripMarkdownLinks={stripMarkdownLinks}
+            onRequestDomainManager={onOpenDomainManager}
           />
         ) : (
           <section className="empty-state">
@@ -187,7 +181,6 @@ export function WorkspaceContainer() {
         )}
       </div>
       </main>
-      {showDomainManager && <DomainManager onClose={() => setShowDomainManager(false)} />}
     </>
   );
 }

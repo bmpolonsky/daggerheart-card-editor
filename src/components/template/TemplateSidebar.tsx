@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { stripInlineMarkers } from "@/lib/text";
 import type { TargetedEvent } from "preact";
 import type { TemplateGroupView } from "@/services/templatesService";
+import type { CustomCardRecord } from "@/services/customCardsService";
 
 interface TemplateSidebarProps {
   searchTerm: string;
@@ -13,6 +14,10 @@ interface TemplateSidebarProps {
   error: string | null;
   groups: TemplateGroupView[];
   onSelectCard: (card: TemplateCard) => void;
+  customCards: CustomCardRecord[];
+  onSelectCustomCard: (record: CustomCardRecord) => void;
+  onDeleteCustomCard: (record: CustomCardRecord) => void;
+  onOpenDomainManager: () => void;
 }
 
 export function TemplateSidebar({
@@ -22,10 +27,23 @@ export function TemplateSidebar({
   error,
   groups,
   onSelectCard,
+  customCards,
+  onSelectCustomCard,
+  onDeleteCustomCard,
+  onOpenDomainManager,
 }: TemplateSidebarProps) {
   const handleSearchInput = (event: TargetedEvent<HTMLInputElement, Event>) => {
     onSearchChange(event.currentTarget.value);
   };
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredCustomCards = normalizedSearch
+    ? customCards.filter((card) => {
+        const title = card.cardFields.title || card.baseCard?.name || "Без названия";
+        return title.toLowerCase().includes(normalizedSearch);
+      })
+    : customCards;
 
   const renderTemplateGroup = (group: TemplateGroupView) => (
     <div key={group.id} className="template-group">
@@ -89,6 +107,13 @@ export function TemplateSidebar({
             className="input--search"
           />
         </div>
+        <button
+          type="button"
+          className="sidebar__domain-button"
+          onClick={onOpenDomainManager}
+        >
+          Управление доменами
+        </button>
       </div>
 
       <div className="sidebar__templates">
@@ -97,6 +122,58 @@ export function TemplateSidebar({
         </div>
 
         <div className="sidebar__scroll">
+          <div className="custom-cards">
+            <div className="custom-cards__header">
+              <h3>Кастомные карты</h3>
+              <span className="custom-cards__count">{filteredCustomCards.length}</span>
+            </div>
+            {filteredCustomCards.length > 0 ? (
+              <div className="custom-cards__grid">
+                {filteredCustomCards.map((record) => {
+                  const title = stripInlineMarkers(
+                    record.cardFields.title || record.baseCard?.name || "Без названия"
+                  );
+                  const previewImage = record.customImage ?? record.baseCard?.image ?? null;
+                  return (
+                    <div
+                      key={record.id}
+                      className="custom-cards__item"
+                      onClick={() => onSelectCustomCard(record)}
+                    >
+                      {previewImage ? (
+                        <img
+                          src={previewImage}
+                          alt={title}
+                          className="custom-cards__image"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="custom-cards__placeholder">Нет изображения</div>
+                      )}
+                      <div className="custom-cards__label">{title}</div>
+                      <button
+                        type="button"
+                        className="custom-cards__delete"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDeleteCustomCard(record);
+                        }}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="custom-cards__empty">
+                {normalizedSearch
+                  ? "Нет кастомных карт по запросу."
+                  : "Кастомные карты появятся после редактирования шаблонов."}
+              </div>
+            )}
+          </div>
           {isLoading && (
             <div className="sidebar__status" role="status">
               Загружаем шаблоны…

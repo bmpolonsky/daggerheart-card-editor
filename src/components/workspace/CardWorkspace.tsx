@@ -20,6 +20,7 @@ interface CardWorkspaceProps {
   selectedTypeId: CardTypeId;
   headlineTitle: string;
   lastUpdatedLabel: string | null;
+  showLastUpdated: boolean;
   cardLabel: string;
   cardImage: string | null;
   customImage: string | null;
@@ -40,6 +41,7 @@ interface CardWorkspaceProps {
   exportError: string | null;
   stripMarkdownLinks: (value: string) => string;
   onRequestImageUploadFromPanel: () => void;
+  onRequestDomainManager: () => void;
 }
 
 export function CardWorkspace({
@@ -50,6 +52,7 @@ export function CardWorkspace({
   selectedTypeId,
   headlineTitle,
   lastUpdatedLabel,
+  showLastUpdated,
   cardLabel,
   cardImage,
   customImage,
@@ -70,15 +73,18 @@ export function CardWorkspace({
   isExporting,
   exportError,
   stripMarkdownLinks,
+  onRequestDomainManager,
 }: CardWorkspaceProps) {
   return (
     <>
       <section className="editor-panel">
         <div className="editor-panel__headline">
           <h1>{headlineTitle}</h1>
-          <p className="editor-panel__timestamp">
-            Последнее обновление: {lastUpdatedLabel ?? "—"}
-          </p>
+          {showLastUpdated && (
+            <p className="editor-panel__timestamp">
+              Последнее изменение: {lastUpdatedLabel ?? "—"}
+            </p>
+          )}
         </div>
         <div className="card-preview-wrapper">
           <CardPreview
@@ -115,6 +121,7 @@ export function CardWorkspace({
         exportError={exportError}
         stripMarkdownLinks={stripMarkdownLinks}
         onRequestImageUpload={onRequestImageUploadFromPanel}
+        onRequestDomainManager={onRequestDomainManager}
       />
     </>
   );

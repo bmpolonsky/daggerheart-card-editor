@@ -33,6 +33,7 @@ interface PropertiesPanelProps {
   exportError: string | null;
   stripMarkdownLinks: (value: string) => string;
   onRequestImageUpload: () => void;
+  onRequestDomainManager: () => void;
 }
 
 export function PropertiesPanel({
@@ -51,6 +52,7 @@ export function PropertiesPanel({
   exportError,
   stripMarkdownLinks,
   onRequestImageUpload,
+  onRequestDomainManager,
 }: PropertiesPanelProps) {
   const typeOptions = CARD_TYPE_LIST;
   const { domains } = useStore(domainStore);
@@ -99,10 +101,24 @@ export function PropertiesPanel({
       return (
         <div className="properties-field">
           <label>Домены</label>
-          <p className="properties-hint">Нет доступных доменов. Откройте менеджер доменов в меню.</p>
+          <p className="properties-hint">Нет доступных доменов. Создайте новый домен.</p>
+          <Button variant="secondary" size="sm" onClick={onRequestDomainManager}>
+            Открыть менеджер доменов
+          </Button>
         </div>
       );
     }
+
+    const handleDomainSelect =
+      (field: "domainPrimary" | "domainSecondary") =>
+      (event: TargetedEvent<HTMLSelectElement, Event>) => {
+        const value = event.currentTarget.value;
+        if (value === "__create__") {
+          onRequestDomainManager();
+          return;
+        }
+        onFieldInput<HTMLSelectElement>(field)(event);
+      };
 
     if (isDomainCard) {
       return (
@@ -111,7 +127,7 @@ export function PropertiesPanel({
             id="card-domain-primary"
             className="card-feature-editor__select"
             value={cardFields.domainPrimary}
-            onChange={onFieldInput<HTMLSelectElement>("domainPrimary")}
+            onChange={handleDomainSelect("domainPrimary")}
           >
             <option value="">Не выбран</option>
             {domainOptions.map((domain) => (
@@ -119,6 +135,7 @@ export function PropertiesPanel({
                 {domain.name}
               </option>
             ))}
+            <option value="__create__">＋ Создать новый домен</option>
           </select>
         </Field>
       );
@@ -131,7 +148,7 @@ export function PropertiesPanel({
           <select
             className="card-feature-editor__select"
             value={cardFields.domainPrimary}
-            onChange={onFieldInput<HTMLSelectElement>("domainPrimary")}
+            onChange={handleDomainSelect("domainPrimary")}
           >
             <option value="">Домен 1</option>
             {domainOptions.map((domain) => (
@@ -139,11 +156,12 @@ export function PropertiesPanel({
                 {domain.name}
               </option>
             ))}
+            <option value="__create__">＋ Создать новый домен</option>
           </select>
           <select
             className="card-feature-editor__select"
             value={cardFields.domainSecondary}
-            onChange={onFieldInput<HTMLSelectElement>("domainSecondary")}
+            onChange={handleDomainSelect("domainSecondary")}
           >
             <option value="">Домен 2</option>
             {domainOptions.map((domain) => (
@@ -151,6 +169,7 @@ export function PropertiesPanel({
                 {domain.name}
               </option>
             ))}
+            <option value="__create__">＋ Создать новый домен</option>
           </select>
         </div>
       </div>

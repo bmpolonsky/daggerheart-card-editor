@@ -119,8 +119,11 @@ export function DomainManager({ onClose }: DomainManagerProps) {
   };
 
   return (
-    <div className="domain-manager__backdrop" role="dialog" aria-modal="true">
-      <div className="domain-manager">
+    <div className="domain-manager__backdrop" role="dialog" aria-modal="true" onClick={onClose}>
+      <div
+        className="domain-manager"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="domain-manager__header">
           <div>
             <h2>Домены</h2>

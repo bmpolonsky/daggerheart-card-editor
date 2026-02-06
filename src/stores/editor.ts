@@ -13,6 +13,7 @@ export interface EditorState {
   cardFields: CardFields;
   customImage: string | null;
   selectedFeatureIndex: number;
+  customCardId: string | null;
 }
 
 const initialState: EditorState = {
@@ -21,6 +22,7 @@ const initialState: EditorState = {
   cardFields: createEmptyCardFields(),
   customImage: null,
   selectedFeatureIndex: 0,
+  customCardId: null,
 };
 
 export const editorStore = new Store<EditorState>(initialState);
