@@ -108,13 +108,13 @@ export async function inlineExternalImages(root: HTMLElement, options: InlineOpt
   };
 }
 
-export function buildSafeFileName(title: string, fallback = "карта") {
-  const trimmed = title.trim() || fallback;
+export function buildSafeFileName(title?: string | null, fallback = "карта") {
+  const trimmed = String(title ?? "").trim() || fallback;
   const sanitized = trimmed.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ");
   return sanitized.slice(0, 80);
 }
 
-export async function exportCardAsPng(cardElement: HTMLElement, title: string) {
+export async function exportCardAsPng(cardElement: HTMLElement, title?: string | null) {
   let restoreImages: (() => void) | undefined;
   try {
     restoreImages = await inlineExternalImages(cardElement);

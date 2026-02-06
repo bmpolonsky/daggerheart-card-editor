@@ -303,7 +303,11 @@ export class EditorService {
   }
 
   private restoreCustomCard(record: CustomCardRecord, options?: { skipHash?: boolean }) {
-    const nextFields = this.applyDomainAssets(record.cardFields, record.typeId);
+    const hydratedFields = {
+      ...createEmptyCardFields(),
+      ...record.cardFields,
+    };
+    const nextFields = this.applyDomainAssets(hydratedFields, record.typeId);
     this.prefetchAssets(nextFields, record.baseCard?.image ?? null);
     editorStore.update(() => ({
       selectedCard: record.baseCard,

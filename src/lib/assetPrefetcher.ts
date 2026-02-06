@@ -2,7 +2,9 @@ const loaded = new Set<string>();
 
 function canPrefetch(url: string | null | undefined) {
   if (!url) return false;
-  if (url.startsWith("data:") || url.startsWith("blob:")) return false;
+  const trimmed = url.trim();
+  if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return false;
+  if (trimmed.startsWith("<")) return false;
   return true;
 }
 
