@@ -39,6 +39,8 @@ export function useStore<T>(store: Store<T>): T {
 
   useEffect(() => {
     const unsubscribe = store.subscribe(setState);
+    // Catch updates that happened between render and effect subscription.
+    setState(store.getState());
     return unsubscribe;
   }, [store]);
 
